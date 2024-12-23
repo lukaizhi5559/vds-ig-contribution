@@ -1,0 +1,6 @@
+{
+  "cSpell.words": ["VDS"],
+  "editor.formatOnSave": true,
+  "notebook.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+}
