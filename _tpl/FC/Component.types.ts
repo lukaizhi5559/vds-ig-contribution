@@ -5,6 +5,5 @@
 /**
  *  %name.pascal%Props
  */
-export type %name.pascal%Props = {
-  children?: React.ReactNode;
+export type %name.pascal%Props = React.PropsWithChildren & {
 };
