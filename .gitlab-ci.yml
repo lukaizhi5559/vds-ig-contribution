@@ -1,0 +1,17 @@
+cypress:
+  stage: test
+  image: cypress/base:16
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm install
+    - npx cypress run
+  artifacts:
+    when: always
+    paths:
+      - cypress/screenshots/
+      - cypress/videos/
+  only:
+    - merge_requests
+    - main
