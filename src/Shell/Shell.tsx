@@ -7,7 +7,7 @@ import * as React from "react";
 
 import type { ShellProps } from "./Shell.types";
 import { useShellStyles } from "./Shell.styles";
-import ContributionForm from '../components/ContributionForm'; // Adjust path as needed
+import ContributionForm from '../components/ContributionForm/ContributionForm'; // Adjust path as needed
 
 
 /**

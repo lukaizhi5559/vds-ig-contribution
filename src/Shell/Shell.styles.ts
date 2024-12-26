@@ -17,5 +17,8 @@ export const useShellStyles = createUseStyles({
     padding: '5px',          
     minHeight: '100vh',      
     backgroundColor: '#f9f9f9',
+    '& h1': {
+      marginBottom: '20px', // Add margin-bottom for h1 tag
+    },
   },
 });

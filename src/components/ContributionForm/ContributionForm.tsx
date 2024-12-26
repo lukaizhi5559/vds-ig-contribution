@@ -5,13 +5,25 @@
 
 import React from "react";
 import { useState } from "react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Label } from "../components/ui/Label";
-import { Select, SelectItem, SelectTrigger, SelectContent } from "../components/ui/Select";
-import { Textarea } from "../components/ui/Textarea";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { Label } from "../ui/Label";
+import { Select, SelectItem, SelectTrigger, SelectContent } from "../ui/Select";
+import { Textarea } from "../ui/Textarea";
+import { createUseStyles } from 'react-jss';
+
+const useStyles = createUseStyles({
+    formItem: {
+        marginBottom: '15px', // Add margin-bottom for form items
+    },
+    label: {
+        display: 'block',
+        marginBottom: '5px', // Add margin-bottom for labels
+    },
+});
 
 export default function ContributionForm() {
+    const classes = useStyles();
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -32,8 +44,8 @@ export default function ContributionForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-                <Label htmlFor="name">Name</Label>
+            <div className={classes.formItem}>
+                <Label htmlFor="name" className={classes.label}>Name</Label>
                 <Input
                     id="name"
                     name="name"
@@ -43,8 +55,8 @@ export default function ContributionForm() {
                 />
             </div>
 
-            <div>
-                <Label htmlFor="email">Email</Label>
+            <div className={classes.formItem}>
+                <Label htmlFor="email" className={classes.label}>Email</Label>
                 <Input
                     id="email"
                     name="email"
@@ -55,8 +67,8 @@ export default function ContributionForm() {
                 />
             </div>
 
-            <div>
-                <Label htmlFor="contributionType">Contribution Type</Label>
+            <div className={classes.formItem}>
+                <Label htmlFor="contributionType" className={classes.label}>Contribution Type</Label>
                 <Select
                     onValueChange={(value) => setFormData((prev) => ({ ...prev, contributionType: value }))}
                 >
@@ -71,8 +83,8 @@ export default function ContributionForm() {
                 </Select>
             </div>
 
-            <div>
-                <Label htmlFor="description">Description</Label>
+            <div className={classes.formItem}>
+                <Label htmlFor="description" className={classes.label}>Description</Label>
                 <Textarea
                     id="description"
                     name="description"
