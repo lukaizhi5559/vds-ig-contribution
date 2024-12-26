@@ -27,6 +27,7 @@ export default function ContributionForm() {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
+        documentation: "",
         contributionType: "",
         description: "",
     });
@@ -45,13 +46,13 @@ export default function ContributionForm() {
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className={classes.formItem}>
-                <Label htmlFor="name" className={classes.label}>Name</Label>
+                <Label htmlFor="name" className={classes.label}>Component Name</Label>
                 <Input
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Enter your name"
+                    placeholder="Enter component name"
                 />
             </div>
 
@@ -64,6 +65,18 @@ export default function ContributionForm() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email"
+                />
+            </div>
+
+            <div className={classes.formItem}>
+                <Label htmlFor="documentation" className={classes.label}>Link Documentation</Label>
+                <Input
+                    id="documentation"
+                    name="documentation"
+                    type="documentation"
+                    value={formData.documentation}
+                    onChange={handleChange}
+                    placeholder="Enter documentation url"
                 />
             </div>
 
