@@ -9,6 +9,7 @@ import type { ShellProps } from "./Shell.types";
 import { useShellStyles } from "./Shell.styles";
 import Portal from "@/pages/Portal";
 import ContributionDashboard from "@/pages/ContributionDashboard";
+import SubmissionDetailView from "@/pages/SubmissionDetailView";
 
 /**
  * Render the final JSX of Shell
@@ -43,6 +44,7 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
         <Routes>
           <Route path="/" element={<Portal />} />
           <Route path="/contribution" element={<ContributionDashboard />} />
+          <Route path="/submission-detail" element={<SubmissionDetailView />} />
         </Routes>
       </main>
 
