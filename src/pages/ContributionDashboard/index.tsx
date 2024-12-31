@@ -7,6 +7,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CreateSubmissionModal from "@/components/modals/CreateSubmission";
 import { useLandingStyles } from "./ContributionDashboard.styles";
 
 const rows = [
@@ -33,7 +34,7 @@ const ContributionDashboard = () => {
 
             {/* New Submission Button */}
             <div className={styles.newSubmission}>
-                <Button>New Submission</Button>
+                <CreateSubmissionModal />
             </div>
         </div>
 
