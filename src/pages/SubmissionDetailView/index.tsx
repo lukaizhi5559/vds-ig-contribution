@@ -10,19 +10,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { FaChevronDown } from 'react-icons/fa';
 import { useSubmissionDetailStyles } from "./SubmissionDetailView.styles";
 
-const SubmissionDetailView = () => {
-  const styles = useSubmissionDetailStyles();
-
-  const comments = [
+const comments = [
     { user: "Alice Johnson", timestamp: "12/27/2024 2:00 PM", comment: "This is a sample comment." },
     { user: "Bob Smith", timestamp: "12/27/2024 2:30 PM", comment: "Please review the updates." },
-  ];
+];
 
-  const activityLogs = [
+const activityLogs = [
     "Status changed to Approved - 12/27/2024 1:00 PM",
     "Comment added by Alice Johnson - 12/27/2024 2:00 PM",
     "Comment added by Bob Smith - 12/27/2024 2:30 PM",
-  ];
+];
+
+const SubmissionDetailView = () => {
+  const styles = useSubmissionDetailStyles();
 
   return (
     <div className={styles.root}>
