@@ -7,7 +7,8 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import CreateSubmissionModal from "@/components/modals/CreateSubmission";
+import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
+import ViewSubmissionModal from "@/components/modals/ViewSubmission";
 import { useLandingStyles } from "./ContributionDashboard.styles";
 
 const rows = [
@@ -34,7 +35,7 @@ const ContributionDashboard = () => {
 
             {/* New Submission Button */}
             <div className={styles.newSubmission}>
-                <CreateSubmissionModal />
+                <CreateEditSubmissionModal />
             </div>
         </div>
 
@@ -65,8 +66,9 @@ const ContributionDashboard = () => {
                 <TableCell>{row.user}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    <Button variant="outline">View</Button>
-                    <Button variant="outline">Edit</Button>
+                    {/* <Button variant="outline">View</Button> */}
+                    <ViewSubmissionModal />
+                    <CreateEditSubmissionModal isEdit />
                   </div>
                 </TableCell>
               </TableRow>

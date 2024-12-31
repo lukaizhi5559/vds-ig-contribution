@@ -4,7 +4,14 @@
 
 import { createUseStyles } from "react-jss";
 
-export const useCreateSubmissionStyles = createUseStyles({
+export const useViewSubmissionStyles = createUseStyles({
+  section: {
+    // marginBottom: "20px",
+  },
+  textarea: {
+    width: "100%",
+    marginTop: "10px",
+  },
   root: {
     display: "flex",
     flexDirection: "column",
@@ -12,6 +19,9 @@ export const useCreateSubmissionStyles = createUseStyles({
     justifyContent: "center",
     minHeight: "100vh",
     backgroundColor: "#f5f5f5",
+  },
+  containerSection: {
+    maxHeight: "20vh",
   },
   container: {
     width: "100%",
@@ -21,16 +31,17 @@ export const useCreateSubmissionStyles = createUseStyles({
     borderRadius: "8px",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "20px",
+  dialogContent: {
+    // maxHeight: "70vh",
+    overflowY: "auto",
   },
-  label: {
-    marginBottom: "8px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    color: "#333",
+  stickyHeader: {
+    position: "sticky",
+    top: 0,
+    backgroundColor: "white",
+    zIndex: 10,
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    padding: "10px 20px",
   },
   title: {
     fontSize: "24px",

@@ -3,16 +3,18 @@
  */
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useCreateSubmissionStyles } from "./CreateSubmission.styles";
+import { useCreateEditSubmissionStyles } from "./CreateEditSubmission.styles";
 
-const CreateSubmissionPage = () => {
-    const navigate = useNavigate();
-    const styles = useCreateSubmissionStyles();
+type CreateEditSubmissionProps = {
+    isEdit?: boolean;
+}
+
+const CreateEditSubmission = ({ isEdit }: CreateEditSubmissionProps ) => {
+    const styles = useCreateEditSubmissionStyles();
   
     const [formData, setFormData] = useState({
         title: "",
@@ -41,11 +43,14 @@ const CreateSubmissionPage = () => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button>New Submission</Button>
+                { isEdit 
+                    ? <Button variant="outline">Edit</Button> 
+                    : <Button>New Submission</Button> 
+                }
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                <DialogTitle>Create Submission</DialogTitle>
+                <DialogTitle>{ isEdit ? 'Edit' : 'Create' } Submission</DialogTitle>
                 </DialogHeader>
                 <div className={styles.formGroup}>
                 <label htmlFor="title" className={styles.label}>Title</label>
@@ -110,4 +115,4 @@ const CreateSubmissionPage = () => {
     );
 };
 
-export default CreateSubmissionPage;
+export default CreateEditSubmission;
