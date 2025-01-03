@@ -7,9 +7,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import type { ShellProps } from "./Shell.types";
 import { useShellStyles } from "./Shell.styles";
-import Portal from "@/pages/Portal";
-import ContributionDashboard from "@/pages/ContributionDashboard";
-import SubmissionDetailView from "@/pages/SubmissionDetailView";
+import Portal from "@/components/pages/Portal";
+import ContributionDashboard from "@/components/pages/ContributionDashboard";
+import SubmissionDetailView from "@/components/pages/SubmissionDetailView";
 
 /**
  * Render the final JSX of Shell
