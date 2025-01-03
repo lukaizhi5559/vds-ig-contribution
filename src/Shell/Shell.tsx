@@ -10,6 +10,7 @@ import { useShellStyles } from "./Shell.styles";
 import Portal from "@/components/pages/Portal";
 import ContributionDashboard from "@/components/pages/ContributionDashboard";
 import SubmissionDetailView from "@/components/pages/SubmissionDetailView";
+import AuthLogin from "@/components/pages/AuthLogin";
 
 /**
  * Render the final JSX of Shell
@@ -34,7 +35,7 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
             </nav>
           </div>
           <div className={styles.searchIcon}>
-            🔍
+          <a href="/login" className={styles.logo}>🔍</a>
           </div>
         </div>
       </header>
@@ -45,6 +46,7 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
           <Route path="/" element={<Portal />} />
           <Route path="/contribution" element={<ContributionDashboard />} />
           <Route path="/submission-detail" element={<SubmissionDetailView />} />
+          <Route path="/login" element={<AuthLogin />} />
         </Routes>
       </main>
 
