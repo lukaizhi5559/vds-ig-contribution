@@ -3,14 +3,9 @@
  */
 
 import * as React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import type { ShellProps } from "./Shell.types";
+import { Outlet } from "@tanstack/react-router";
 import { useShellStyles } from "./Shell.styles";
-import Portal from "@/components/pages/Portal";
-import ContributionDashboard from "@/components/pages/ContributionDashboard";
-import SubmissionDetailView from "@/components/pages/SubmissionDetailView";
-import AuthLogin from "@/components/pages/AuthLogin";
+import type { ShellProps } from "./Shell.types";
 
 /**
  * Render the final JSX of Shell
@@ -19,7 +14,6 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
   const styles = useShellStyles();
 
   return (
-    <Router>
     <div className={styles.root}>
       {/* Header */}
       <header className={styles.header}>
@@ -27,7 +21,7 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
           <div className="flex items-center">
             <a href="/" className={styles.logo}>Verizon</a>
             <nav className={styles.nav}>
-              {/* Uncomment some possible navs link */}
+              {/* Uncomment possible nav links */}
               {/* <a href="#">Mobile</a>
               <a href="#">Internet</a>
               <a href="#">Solutions</a>
@@ -35,19 +29,14 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
             </nav>
           </div>
           <div className={styles.searchIcon}>
-          <a href="/login" className={styles.logo}>🔍</a>
+            <a href="/login" className={styles.logo}>🔍</a>
           </div>
         </div>
       </header>
 
       {/* Portal Page Content */}
       <main className={styles.main}>
-        <Routes>
-          <Route path="/" element={<Portal />} />
-          <Route path="/contribution" element={<ContributionDashboard />} />
-          <Route path="/submission-detail" element={<SubmissionDetailView />} />
-          <Route path="/login" element={<AuthLogin />} />
-        </Routes>
+        <Outlet /> {/* Child routes will render here */}
       </main>
 
       {/* Footer */}
@@ -63,6 +52,5 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
         </div>
       </footer>
     </div>
-    </Router>
   );
 };
