@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,8 +59,6 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&display=swap');
 
 html,
 body,

@@ -3,15 +3,13 @@
  */
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePortalStyles } from "./Portal.styles";
 
 const Portal = () => {
   const styles = usePortalStyles();
-  const navigate = useNavigate();
-
+  
   return (
     <div className={styles.root}>
      {/* Contribution Model Card */}
@@ -23,12 +21,10 @@ const Portal = () => {
           <p className={styles.cardContent}>
             Streamline submissions and tracking
           </p>
-          <Button 
-            className={styles.button}
-            onClick={() => navigate("/contribution")}
-          >
-            Get Started
-          </Button>
+          <a href="/contribution">
+            <Button className={styles.button}>Get Started</Button>
+          </a>
+         
         </CardContent>
       </Card>
 
