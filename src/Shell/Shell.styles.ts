@@ -11,7 +11,6 @@ export const useShellStyles = createUseStyles({
   root: {
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-    minWidth: '80vw',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -56,6 +55,44 @@ export const useShellStyles = createUseStyles({
     margin: '0 auto',
     padding: '2.5rem 1.5rem',
     display: 'grid',
+  },
+  userSection: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  userName: {
+    fontSize: "14px",
+    color: "#333",
+    fontWeight: "bold",
+  },
+  dropdownContainer: {
+    position: "relative",
+  },
+  dropdown: {
+    position: "absolute",
+    top: "100%",
+    right: 0,
+    backgroundColor: "white",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    zIndex: 10,
+    minWidth: "150px",
+  },
+  dropdownLink: {
+    display: "block",
+    padding: "10px",
+    textDecoration: "none",
+    color: "#333",
+    fontSize: "14px",
+    textAlign: "left",
+    "&:hover": {
+      backgroundColor: "#f5f5f5",
+    },
+    border: "none",
+    cursor: "pointer",
+    width: "100%",
   },
   footer: {
     backgroundColor: '#f1f1f1',

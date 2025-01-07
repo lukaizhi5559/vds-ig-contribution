@@ -5,6 +5,7 @@ export type User = {
   id: number;
   name: string;
   email: string;
+  password?: string;
 };
 
 // Fetch all users
@@ -22,19 +23,39 @@ export const createUser = (user: Omit<User, "id">): Promise<User> =>
 export const deleteUser = (userId: number): Promise<{ message: string }> =>
   apiClient<{ message: string }>(`/api/users/${userId}`, { method: "DELETE" });
 
+// Login a user
+export const loginUser = (user: Omit<User, "id"|"name">): Promise<User> =>
+  apiClient<User>("/api/users/login", { method: "POST", body: user });
+
+
 // React Query Hooks
 export const useUsers = () =>
   useQuery<User[], Error>({ queryKey: ["users"], queryFn: fetchUsers });
 
-export const useUser = (userId: number) =>
-  useQuery<User, Error>({ queryKey: ["users", userId], queryFn: () => fetchUserById(userId) });
+export const useUser = (userId: number) => useQuery<User, Error>({ 
+  queryKey: ["users", userId], 
+  queryFn: () => fetchUserById(userId),
+});
+
+export const useLoginUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<User, Error, Omit<User, "id"|"name">>(
+    {
+      mutationFn: loginUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+      },
+    }
+  );
+}
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation<User, Error, Omit<User, "id">>(
     {
-      mutationFn: (user: Omit<User, "id">) => createUser(user),
+      mutationFn: createUser,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["users"] });
       },

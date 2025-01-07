@@ -2,16 +2,29 @@
  * Copyright (C) Verizon. All rights reserved.
  */
 
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
+import { useUserContext } from "@/context/UserContext";
+import { getInitials } from "@/lib/utils";
 import { useShellStyles } from "./Shell.styles";
 import type { ShellProps } from "./Shell.types";
 
 /**
  * Render the final JSX of Shell
  */
-export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
+export const Shell: React.FC<ShellProps> = () => {
   const styles = useShellStyles();
+  const navigate = useNavigate();
+  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { userDetails, isAuthenticated, logout } = useUserContext();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate({ to: "/login", replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className={styles.root}>
@@ -19,7 +32,9 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
       <header className={styles.header}>
         <div className={styles.container}>
           <div className="flex items-center">
-            <a href="/" className={styles.logo}>Verizon</a>
+            <a href="/" className={styles.logo}>
+              Verizon
+            </a>
             <nav className={styles.nav}>
               {/* Uncomment possible nav links */}
               {/* <a href="#">Mobile</a>
@@ -28,15 +43,46 @@ export const Shell: React.FC<ShellProps> = (props: ShellProps) => {
               <a href="#">Insights</a> */}
             </nav>
           </div>
-          <div className={styles.searchIcon}>
-            <a href="/login" className={styles.logo}>🔍</a>
+          <div className={styles.userSection}>
+            {userDetails && (
+              <span className={styles.userName}>
+                Welcome, {userDetails.name}
+              </span>
+            )}
+            <div className={styles.dropdownContainer}>
+              <button
+                className={styles.searchIcon}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                {getInitials(userDetails?.name)}
+              </button>
+              {isDropdownOpen && (
+                <div className={styles.dropdown}>
+                  <a
+                    className={styles.dropdownLink}
+                    href="/submission-detail"
+                  >
+                    Submission Detail View
+                  </a>
+                  <button
+                    className={styles.dropdownLink}
+                    onClick={() => {
+                      setIsDropdownOpen(!isDropdownOpen)
+                      logout()
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Portal Page Content */}
       <main className={styles.main}>
-        <Outlet /> {/* Child routes will render here */}
+          <Outlet /> {/* Child routes will render here */}
       </main>
 
       {/* Footer */}

@@ -7,6 +7,7 @@ import { http, HttpResponse } from "msw";
 const users = [
   { id: 1, name: "Alice", email: "alice@example.com" },
   { id: 2, name: "Bob", email: "bob@example.com" },
+  { id: 3, name: "Test Name", email: "test1@verizon.com", password: "password" },
 ];
 
 export const handlers = [
@@ -47,5 +48,17 @@ export const handlers = [
     users.push(newUser);
 
     return HttpResponse.json(newUser, { status: 201 });
+  }),
+
+  // Login user
+  http.post("/api/users/login", async ({ request }) => {
+    const { email, password } = await request.json();
+    const userExists = users.filter((u) => u.email === email && u.password === password);
+
+    if (userExists.length > 0) {
+      return HttpResponse.json(userExists[0], { status: 201 });
+    } else {
+      return HttpResponse.json(null, { status: 200 });
+    }
   }),
 ];
