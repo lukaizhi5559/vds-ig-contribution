@@ -10,10 +10,11 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { useCreateEditSubmissionStyles } from "./CreateEditSubmission.styles";
 
 type CreateEditSubmissionProps = {
+    submissionId?: number;
     isEdit?: boolean;
 }
 
-const CreateEditSubmission = ({ isEdit }: CreateEditSubmissionProps ) => {
+const CreateEditSubmission = ({ isEdit, submissionId }: CreateEditSubmissionProps ) => {
     const styles = useCreateEditSubmissionStyles();
   
     const [formData, setFormData] = useState({

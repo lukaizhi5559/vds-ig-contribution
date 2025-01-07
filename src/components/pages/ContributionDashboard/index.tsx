@@ -2,7 +2,6 @@
  * Copyright (C) Verizon. All rights reserved.
  */
 
-// Import dependencies
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,33 +9,37 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
 import ViewSubmissionModal from "@/components/modals/ViewSubmission";
 import { useLandingStyles } from "./ContributionDashboard.styles";
-
-const rows = [
-  { title: "Submission 1", status: "Approved", date: "12/27/2024", user: "Alice Johnson" },
-  { title: "Submission 2", status: "In Review", date: "12/26/2024", user: "Bob Smith" },
-  { title: "Submission 3", status: "Denied", date: "12/25/2024", user: "Charlie Brown" },
-  { title: "Submission 4", status: "Pending", date: "12/24/2024", user: "Diana Prince" },
-  { title: "Submission 5", status: "Approved", date: "12/23/2024", user: "Ethan Hunt" },
-];
+import { useSubmissions } from "@/api/submissions";
 
 const ContributionDashboard = () => {
   const styles = useLandingStyles();
 
+  // Fetch submissions using the React Query hook
+  const { data: submissions, isLoading, isError, error } = useSubmissions();
+
+  if (isLoading) {
+    return <div className={styles.loading}>Loading submissions...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.error}>
+        Failed to load submissions: {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.root}>
-
       {/* Main Content */}
       <div className={styles.container}>
         <div className={styles.titleWrapper}>
-            <div className={styles.title}>
-                Contribution Model Dashboard
-                
-            </div>
+          <div className={styles.title}>Contribution Model Dashboard</div>
 
-            {/* New Submission Button */}
-            <div className={styles.newSubmission}>
-                <CreateEditSubmissionModal />
-            </div>
+          {/* New Submission Button */}
+          <div className={styles.newSubmission}>
+            <CreateEditSubmissionModal />
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -49,26 +52,35 @@ const ContributionDashboard = () => {
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>User Info</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>{row.title}</TableCell>
+            {submissions?.map((submission) => (
+              <TableRow key={submission.id}>
+                <TableCell>{submission.title}</TableCell>
                 <TableCell>
-                  <span className={`text-${row.status.toLowerCase() === 'approved' ? 'green-500' : row.status.toLowerCase() === 'denied' ? 'red-500' : 'orange-500'}`}>
-                    {row.status}
+                  <span
+                    className={`text-${
+                      submission.status.toLowerCase() === "approved"
+                        ? "green-500"
+                        : submission.status.toLowerCase() === "rejected"
+                        ? "red-500"
+                        : "orange-500"
+                    }`}
+                  >
+                    {submission.status}
                   </span>
                 </TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>{row.user}</TableCell>
+                <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{submission.description}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    {/* <Button variant="outline">View</Button> */}
-                    <ViewSubmissionModal />
-                    <CreateEditSubmissionModal isEdit />
+                    {/* View Submission Modal */}
+                    <ViewSubmissionModal submissionId={submission.id} />
+                    {/* Edit Submission Modal */}
+                    <CreateEditSubmissionModal isEdit submissionId={submission.id} />
                   </div>
                 </TableCell>
               </TableRow>

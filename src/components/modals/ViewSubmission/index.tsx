@@ -9,7 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useViewSubmissionStyles } from "./ViewSubmission.styles";
 
-const ViewSubmissionModal = () => {
+type ViewSubmissionModalProps = {
+  submissionId: number;
+};
+
+const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
   const styles = useViewSubmissionStyles();
 
   const comments = [
