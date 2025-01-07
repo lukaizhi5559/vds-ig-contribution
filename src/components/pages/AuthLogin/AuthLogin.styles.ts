@@ -9,6 +9,7 @@ export const useAuthLoginStyles = createUseStyles({
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
+    minWidth: '80vw',
     backgroundColor: "#f5f5f5",
   },
   header: {
@@ -52,6 +53,29 @@ export const useAuthLoginStyles = createUseStyles({
     fontSize: "16px",
     color: "gray",
     marginBottom: "30px",
+  },
+  tabs: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    marginBottom: "20px",
+  },
+  tabButton: {
+    padding: "10px 20px",
+    fontSize: "14px",
+    fontWeight: "bold",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    backgroundColor: "#f5f5f5",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: "#eaeaea",
+    },
+    "&.active": {
+      backgroundColor: "#007bff",
+      color: "white",
+      borderColor: "#007bff",
+    },
   },
   formGroup: {
     marginBottom: "20px",
@@ -147,5 +171,10 @@ export const useAuthLoginStyles = createUseStyles({
     '&:hover': {
       textDecoration: "underline",
     },
+  },
+  error: {
+    color: "red",
+    fontSize: "14px",
+    marginBottom: "10px",
   },
 });
