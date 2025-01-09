@@ -40,6 +40,7 @@ export const useHeaderStyles = createUseStyles({
     display: "flex",
     alignItems: "center",
     gap: "10px",
+    cursor: "pointer",
   },
   userName: {
     fontSize: "14px",

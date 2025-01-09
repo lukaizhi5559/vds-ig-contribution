@@ -10,7 +10,7 @@ const users = [
   { id: 3, name: "Test Name", email: "test1@verizon.com", password: "password" },
 ];
 
-const submissions = [
+let submissions = [
   {
     id: 1,
     title: "Submission 1",
@@ -67,8 +67,8 @@ export const handlers = [
 
   // Create new user
   http.post("/api/users", async ({ request }) => {
-    const { name, email } = await request.json();
-    const newUser = { id: users.length + 1, name, email };
+    const { name, email, password } = await request.json();
+    const newUser = { id: users.length + 1, name, email, password };
     users.push(newUser);
 
     return HttpResponse.json(newUser, { status: 201 });
@@ -105,21 +105,57 @@ export const handlers = [
 
   // Create a new submission
   http.post("/api/submissions", async ({ request }) => {
-    const { title, description, status } = await request.json();
+    const { 
+      title, 
+      description, 
+      status,
+      businessUseCase,
+      componentOrigin,
+      figmaFile,
+    } = await request.json();
+  
     const newSubmission = {
       id: submissions.length + 1,
       title,
       description,
       status: status || "Pending",
       createdAt: new Date().toISOString(),
+      businessUseCase,
+      componentOrigin,
+      figmaFile,
     };
+
     submissions.push(newSubmission);
 
-    return HttpResponse.json(newSubmission, { status: 201 });
+    return HttpResponse.json(newSubmission, {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+
+  // Update submission info
+  http.patch("/api/submissions/:submissionId", async ({ params, request }) => {
+    const { submissionId } = params;
+    const submissionUpdate = await request.json();
+    const submission = submissions.find((s) => s.id === parseInt(submissionId, 10));
+
+    submissions = submissions.map((s) => {
+      if (s.id === parseInt(submissionId, 10)) {
+        return { ...s, ...submissionUpdate };
+      }
+
+      return s;
+    })
+
+    if (!submission) {
+      return HttpResponse.json({ error: "Submission not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json(submission, { status: 200 });
   }),
 
   // Update submission status
-  http.patch("/api/submissions/:submissionId", async ({ params, request }) => {
+  http.patch("/api/submissions/status/:submissionId", async ({ params, request }) => {
     const { submissionId } = params;
     const { status } = await request.json();
     const submission = submissions.find((s) => s.id === parseInt(submissionId, 10));
