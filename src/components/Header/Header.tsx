@@ -48,7 +48,9 @@ export const Header: React.FC<React.PropsWithChildren<HeaderProps>> = (props: He
             <a href="#">Insights</a> */}
           </nav>
         </div>
-        <div className={styles.userSection}>
+        <div className={styles.userSection}
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        >
           {userDetails && (
             <span className={styles.userName}>
               Welcome, {userDetails.name}
@@ -60,7 +62,6 @@ export const Header: React.FC<React.PropsWithChildren<HeaderProps>> = (props: He
           >
             <button
               className={styles.searchIcon}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               {getInitials(userDetails?.name)}
             </button>
@@ -70,7 +71,7 @@ export const Header: React.FC<React.PropsWithChildren<HeaderProps>> = (props: He
                   className={styles.dropdownLink}
                   href="/"
                 >
-                  Home
+                  Portal
                 </a>
                 <a
                   className={styles.dropdownLink}

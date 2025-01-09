@@ -6,26 +6,30 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { useViewSubmissionStyles } from "./ViewSubmission.styles";
+import { useSubmission } from "@/api/submissions";
 
 type ViewSubmissionModalProps = {
-  submissionId: number;
+  submissionId: number | undefined;
 };
 
 const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
   const styles = useViewSubmissionStyles();
 
-  const comments = [
-    { user: "Alice Johnson", timestamp: "12/27/2024 2:00 PM", comment: "This is a sample comment." },
-    { user: "Bob Smith", timestamp: "12/27/2024 2:30 PM", comment: "Please review the updates." },
-  ];
+  // Fetch submission details using useSubmission
+  const { data: submission, isLoading, error } = useSubmission(submissionId || 0);
 
-  const activityLogs = [
-    "Status changed to Approved - 12/27/2024 1:00 PM",
-    "Comment added by Alice Johnson - 12/27/2024 2:00 PM",
-    "Comment added by Bob Smith - 12/27/2024 2:30 PM",
-  ];
+  if (isLoading) {
+    return <div>Loading submission...</div>;
+  }
+
+  if (error) {
+    return <div>Failed to load submission details. Please try again later.</div>;
+  }
+
+  const comments = submission?.comments || []; // Assume `comments` is part of the submission data
+  const activityLogs = submission?.activityLogs || []; // Assume `activityLogs` is part of the submission data
 
   return (
     <Dialog>
@@ -39,10 +43,10 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
         
         {/* Metadata Section */}
         <div className={styles.section}>
-          <div><strong>Title:</strong> Example Submission</div>
-          <div><strong>Status:</strong> Approved</div>
-          <div><strong>Submission Date:</strong> 12/27/2024</div>
-          <div><strong>Submitted By:</strong> Alice Johnson</div>
+          <div><strong>Title:</strong> {submission?.title || "N/A"}</div>
+          <div><strong>Status:</strong> {submission?.status || "N/A"}</div>
+          <div><strong>Submission Date:</strong> {submission?.createdAt || "N/A"}</div>
+          <div><strong>Submitted By:</strong> {submission?.submittedBy || "N/A"}</div>
         </div>
 
         <hr />
@@ -52,11 +56,17 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
           <h3>Activity Log</h3>
           <Table>
             <TableBody>
-              {activityLogs.map((log, index) => (
-                <TableRow key={index}>
-                  <TableCell>{log}</TableCell>
+              {activityLogs.length > 0 ? (
+                activityLogs.map((log, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{log}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell>No activity logs available</TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
@@ -65,15 +75,19 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
 
         {/* Comments Section */}
         <div className={styles.section}>
-            <h3>Comments</h3>
-            <DialogDescription>
-            {comments.map((comment, index) => (
+          <h3>Comments</h3>
+          <DialogDescription>
+            {comments.length > 0 ? (
+              comments.map((comment, index) => (
                 <div key={index} className="mb-4">
-                <strong>{comment.user}</strong> - {comment.timestamp}
-                <p>{comment.comment}</p>
+                  <strong>{comment.user}</strong> - {comment.timestamp}
+                  <p>{comment.text}</p>
                 </div>
-            ))}
-            </DialogDescription>
+              ))
+            ) : (
+              <p>No comments available</p>
+            )}
+          </DialogDescription>
           <Textarea className={styles.textarea} placeholder="Add a comment..." />
           <Button className="mt-2">Submit</Button>
         </div>
@@ -81,7 +95,9 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
         <hr />
 
         <DialogFooter>
-          <Button variant="outline">Close</Button>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

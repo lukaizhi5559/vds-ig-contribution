@@ -1,46 +1,56 @@
-/*!
- * Copyright (C) Verizon. All rights reserved.
- */
-
 import { createUseStyles } from "react-jss";
 
 export const useCreateEditSubmissionStyles = createUseStyles({
-  root: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f5f5f5",
+  dialogContent: {
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "1.5rem",
   },
-  container: {
-    width: "100%",
-    maxWidth: "600px",
-    padding: "20px",
-    backgroundColor: "white",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  dialogHeader: {
+    marginBottom: "1rem",
+  },
+  dialogTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "bold",
+  },
+  contentWrapper: {
+    maxHeight: "70vh",
+    overflowY: "auto",
+    padding: "1rem 0",
   },
   formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: "20px",
+    marginBottom: "1.5rem",
   },
   label: {
-    marginBottom: "8px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    color: "#333",
+    display: "block",
+    marginBottom: "0.5rem",
+    fontWeight: "600",
   },
-  title: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    marginBottom: "20px",
-    textAlign: "center",
+  input: {
+    width: "100%",
   },
-  buttonGroup: {
+  textarea: {
+    width: "100%",
+    resize: "vertical",
+  },
+  errorText: {
+    color: "#ff4d4f",
+    fontSize: "0.875rem",
+    marginTop: "0.25rem",
+  },
+  dialogFooter: {
     display: "flex",
     justifyContent: "flex-end",
-    marginTop: "20px",
+    gap: "1rem",
+  },
+  submitButton: {
+    color: "#fff",
+  },
+  cancelButton: {
+    backgroundColor: "#f8f9fa",
+    color: "#000",
+    "&:hover": {
+      backgroundColor: "#e9ecef",
+    },
   },
 });

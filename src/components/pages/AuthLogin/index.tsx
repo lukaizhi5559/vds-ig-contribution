@@ -55,10 +55,10 @@ const AuthLogin = () => {
 
   const handleRegister = async () => {
     setError(null);
-    const { name, email } = formData;
+    const { name, email, password } = formData;
 
     try {
-      const user = await createUserMutation.mutateAsync({ name, email });
+      const user = await createUserMutation.mutateAsync({ name, email, password });
       login(user);
       navigate({ to: "/contribution" });
     } catch (err) {
