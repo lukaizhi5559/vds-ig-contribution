@@ -11,7 +11,7 @@ import { UserProvider } from "@/context/UserContext";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "@/routes"; // Import the router created in Shell.tsx
 
-console.log('ENV VARIABLES:', process.env);
+console.log('ENV VARIABLES:', process.env, process.env.VERCEL_ENV);
 
 if (
   process.env.NODE_ENV === "development" || 
