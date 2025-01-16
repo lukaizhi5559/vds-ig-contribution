@@ -29,11 +29,13 @@ import useFigmaData from "@/hooks/useFigmaData";
 type CreateEditSubmissionProps = {
   submissionId?: number;
   isEdit?: boolean;
+  onSuccess?: () => void; // Callback to trigger re-render in parent
 };
 
 const CreateEditSubmission = ({
   isEdit = false,
   submissionId,
+  onSuccess,
 }: CreateEditSubmissionProps) => {
   const styles = useCreateEditSubmissionStyles();
   const { toast } = useToast();
@@ -41,10 +43,10 @@ const CreateEditSubmission = ({
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
 
-  // Figma Data State
-  const [shouldGetFigmaData, setShouldGetFigmaData] = useState(false);
+  // State for fetching Figma data
+  const [shouldFetchFigmaData, setShouldFetchFigmaData] = useState(false);
 
-  // React State
+  // Form Data State
   const [formData, setFormData] = useState<Submission>({
     id: 0,
     title: "",
@@ -66,8 +68,11 @@ const CreateEditSubmission = ({
   const createSubmissionMutation = useCreateSubmission();
   const updateSubmissionMutation = useUpdateSubmission();
 
-  // Hook to fetch Figma data
-  const { processedData, status: figmaStatus, error: figmaError } = useFigmaData(formData.figmaFile, shouldGetFigmaData);
+  // Figma Data Hook
+  const { processedData, status: figmaStatus, error: figmaError } = useFigmaData(
+    formData.figmaFile,
+    shouldFetchFigmaData
+  );
 
   // Populate form data when editing
   useEffect(() => {
@@ -88,6 +93,7 @@ const CreateEditSubmission = ({
     }
   }, [isEdit, submission]);
 
+  // Validate Form Data
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -130,10 +136,8 @@ const CreateEditSubmission = ({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
+
     if (figmaStatus === "error") {
       toast({
         title: "Figma Data Fetch Failed",
@@ -142,77 +146,60 @@ const CreateEditSubmission = ({
       return;
     }
 
+    const payload = {
+      ...formData,
+      status: (processedData?.status as "in progress" | "success" | "error" | "rejected") || "in progress",
+      figmaData: processedData,
+    };
+
     if (isEdit && submissionId) {
-      const { title, description, businessUseCase, componentOrigin, figmaFile } =
-        formData;
       updateSubmissionMutation.mutate(
-        {
-          id: submissionId,
-          title,
-          description,
-          businessUseCase,
-          componentOrigin,
-          figmaFile,
-          status: formData.status,
-          figmaData: processedData,
-        },
+        { ...payload, id: submissionId },
         {
           onSuccess: () => {
             toast({
               title: "Submission Updated",
               description: "The submission was updated successfully.",
             });
-            setIsOpen(false); // Close dialog on success
+            setIsOpen(false);
+            setShouldFetchFigmaData(false);
+            onSuccess?.(); // Trigger parent re-render
           },
           onError: (error) => {
             toast({
               title: "Submission Update Failed",
               description: error instanceof Error ? error.message : "Unknown error",
-              action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
           },
         }
       );
     } else {
-      const { title, description, businessUseCase, componentOrigin, figmaFile } =
-        formData;
-      createSubmissionMutation.mutate(
-        {
-          title,
-          description,
-          businessUseCase,
-          componentOrigin,
-          figmaFile,
-          status: processedData?.status || "in progress",
-          figmaData: processedData,
+      createSubmissionMutation.mutate(payload, {
+        onSuccess: () => {
+          toast({
+            title: "Submission Created",
+            description: "A new submission was created successfully.",
+          });
+          setIsOpen(false);
+          setShouldFetchFigmaData(false);
+          onSuccess?.(); // Trigger parent re-render
         },
-        {
-          onSuccess: () => {
-            toast({
-              title: "Submission Created",
-              description: "A new submission was created successfully.",
-            });
-            setIsOpen(false); // Close dialog on success
-          },
-          onError: (error) => {
-            toast({
-              title: "Submission Creation Failed",
-              description: error instanceof Error ? error.message : "Unknown error",
-              action: <ToastAction altText="Try again">Try again</ToastAction>,
-            });
-          },
-        }
-      );
+        onError: (error) => {
+          toast({
+            title: "Submission Creation Failed",
+            description: error instanceof Error ? error.message : "Unknown error",
+          });
+        },
+      });
     }
   };
 
-  // Trigger a submit
+  // Trigger form submission after Figma data fetch
   useEffect(() => {
-    if (figmaStatus === "success") {
+    if (figmaStatus === "success" && shouldFetchFigmaData) {
       handleSubmit();
-      console.log('PROCESS DATA:', status, processedData);
     }
-  }, [figmaStatus]);
+  }, [figmaStatus, shouldFetchFigmaData]);
 
   if (isEdit && isLoading) {
     return <div>Loading submission details...</div>;
@@ -227,10 +214,7 @@ const CreateEditSubmission = ({
           <Button>New Submission</Button>
         )}
       </DialogTrigger>
-      <DialogContent
-        className={styles.dialogContent}
-        aria-describedby={undefined}
-      >
+      <DialogContent className={styles.dialogContent}>
         <DialogHeader className={styles.dialogHeader}>
           <DialogTitle className={styles.dialogTitle}>
             {isEdit ? "Edit Submission" : "Create Submission"}
@@ -245,14 +229,11 @@ const CreateEditSubmission = ({
             <Input
               id="title"
               name="title"
-              placeholder="Enter submission title"
               value={formData.title}
               onChange={handleInputChange}
               className={styles.input}
             />
-            {errors.title && (
-              <span className={styles.errorText}>{errors.title}</span>
-            )}
+            {errors.title && <span className={styles.errorText}>{errors.title}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -291,12 +272,11 @@ const CreateEditSubmission = ({
 
           <div className={styles.formGroup}>
             <label htmlFor="figmaFile" className={styles.label}>
-              Figma File Origin*
+              Figma File URL or Key*
             </label>
             <Input
               id="figmaFile"
               name="figmaFile"
-              placeholder="Enter Figma File URL or File Key"
               value={formData.figmaFile}
               onChange={handleInputChange}
               className={styles.input}
@@ -333,10 +313,10 @@ const CreateEditSubmission = ({
           </div>
         </div>
         <DialogFooter className={styles.dialogFooter}>
-          <Button 
+          <Button
             onClick={() => {
               if (validateForm()) {
-                setShouldGetFigmaData(true)
+                setShouldFetchFigmaData(true);
               }
             }}
             className={styles.submitButton}

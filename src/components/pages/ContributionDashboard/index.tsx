@@ -27,10 +27,12 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ContributionDashboard = () => {
   const styles = useLandingStyles();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: submissions, isLoading, isError, error } = useSubmissions();
   const { mutate: deleteSubmission } = useDeleteSubmission();
@@ -55,6 +57,7 @@ const ContributionDashboard = () => {
           });
           setIsConfirmOpen(false);
           setSubmissionToDelete(null);
+          queryClient.invalidateQueries({ queryKey: ["submissions"] }); // Refetch submissions after deletion
         },
         onError: (err) => {
           toast({
@@ -66,6 +69,10 @@ const ContributionDashboard = () => {
         },
       });
     }
+  };
+
+  const handleModalSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["submissions"] }); // Refetch submissions after adding or updating
   };
 
   if (isLoading) {
@@ -89,7 +96,7 @@ const ContributionDashboard = () => {
 
           {/* New Submission Button */}
           <div className={styles.newSubmission}>
-            <CreateEditSubmissionModal />
+            <CreateEditSubmissionModal onSuccess={handleModalSuccess} />
           </div>
         </div>
 
@@ -113,13 +120,11 @@ const ContributionDashboard = () => {
                 <TableCell>{submission.title}</TableCell>
                 <TableCell>
                   <span
-                    className={`text-${
-                      submission.status.toLowerCase() === "approved"
-                        ? "green-500"
-                        : submission.status.toLowerCase() === "rejected"
-                        ? "red-500"
-                        : "orange-500"
-                    }`}
+                    className={submission.status.toLowerCase() === "success"
+                      ? "text-green-600"
+                      : submission.status.toLowerCase() === "rejected"
+                      ? "text-red-500"
+                      : "text-orange-500"}
                   >
                     {submission.status}
                   </span>
@@ -131,7 +136,11 @@ const ContributionDashboard = () => {
                     {/* View Submission Modal */}
                     <ViewSubmissionModal submissionId={submission.id} />
                     {/* Edit Submission Modal */}
-                    <CreateEditSubmissionModal isEdit submissionId={submission.id} />
+                    <CreateEditSubmissionModal
+                      isEdit
+                      submissionId={submission.id}
+                      onSuccess={handleModalSuccess}
+                    />
                     {/* Delete Submission Button with Trash Icon */}
                     <Button
                       variant="outline"

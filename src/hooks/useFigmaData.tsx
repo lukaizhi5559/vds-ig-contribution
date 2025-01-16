@@ -1,7 +1,17 @@
+/*!
+ * Copyright (C) Verizon. All rights reserved.
+ */
+
 import { useState, useEffect, useCallback } from "react";
 
 const FIGMA_API_URL = "https://api.figma.com/v1/files";
-const FIGMA_API_TOKEN = import.meta.env.VITE_FIGMA_API_TOKEN || "";
+const FIGMA_API_TOKEN = (import.meta as ImportMetaWithEnv).env.VITE_FIGMA_API_TOKEN || "";
+
+interface ImportMetaWithEnv extends ImportMeta {
+  env: {
+    VITE_FIGMA_API_TOKEN: string;
+  };
+}
 
 type FigmaNode = {
   name?: string;
