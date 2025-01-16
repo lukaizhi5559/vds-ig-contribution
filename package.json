@@ -37,6 +37,7 @@
     "url": "https://gitlab.verizon.com/cx-platforms/vds/vds-experimental/vds-ig-contribution"
   },
   "dependencies": {
+    "@andypf/json-viewer": "^2.1.7",
     "@fontsource/inter": "^5.1.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.1",
@@ -52,6 +53,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "eslint": "8.57.1",
     "jest-environment-jsdom": "29.7.0",
     "lucide-react": "^0.469.0",

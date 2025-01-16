@@ -32,8 +32,9 @@ export const useViewSubmissionStyles = createUseStyles({
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   dialogContent: {
-    // maxHeight: "70vh",
+    maxHeight: "90vh",
     overflowY: "auto",
+    padding: "1.5rem",
   },
   stickyHeader: {
     position: "sticky",
@@ -54,4 +55,10 @@ export const useViewSubmissionStyles = createUseStyles({
     justifyContent: "flex-end",
     marginTop: "20px",
   },
+  errorText: {
+    color: "#ff4d4f", // Bright red for error indication
+    fontSize: "0.875rem", // Slightly smaller font size for secondary emphasis
+    fontWeight: "bold", // Bold text to catch attention
+    marginTop: "0.5rem", // Adds space above the error text
+  },  
 });

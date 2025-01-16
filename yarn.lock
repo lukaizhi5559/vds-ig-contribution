@@ -29,6 +29,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@andypf/json-viewer@npm:^2.1.7":
+  version: 2.1.7
+  resolution: "@andypf/json-viewer@npm:2.1.7"
+  checksum: df4de6d753d511a7cc92db4c162743d2b0c063044eddcc76efb920fa420e9a0d0705c11e95df9b02c29f5770d4c0b4d3de397f0d9c441d9cfde0cd3569746e48
+  languageName: node
+  linkType: hard
+
 "@antfu/ni@npm:^0.21.4":
   version: 0.21.12
   resolution: "@antfu/ni@npm:0.21.12"
@@ -3539,6 +3546,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@vds/contribution@workspace:."
   dependencies:
+    "@andypf/json-viewer": ^2.1.7
     "@chromatic-com/storybook": 1.9.0
     "@fontsource/inter": ^5.1.0
     "@heroicons/react": ^2.2.0
@@ -3577,6 +3585,7 @@ __metadata:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     component_scaffold: 0.6.0
+    dotenv: ^16.4.7
     eslint: 8.57.1
     eslint-config-prettier: 9.1.0
     eslint-plugin-notice: 1.0.0
@@ -5388,6 +5397,13 @@ __metadata:
     no-case: ^3.0.4
     tslib: ^2.0.3
   checksum: a65e3519414856df0228b9f645332f974f2bf5433370f544a681122eab59e66038fc3349b4be1cdc47152779dac71a5864f1ccda2f745e767c46e9c6543b1169
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.4.7":
+  version: 16.4.7
+  resolution: "dotenv@npm:16.4.7"
+  checksum: c27419b5875a44addcc56cc69b7dc5b0e6587826ca85d5b355da9303c6fc317fc9989f1f18366a16378c9fdd9532d14117a1abe6029cc719cdbbef6eaef2cea4
   languageName: node
   linkType: hard
 

@@ -37,6 +37,12 @@ export const useLandingStyles = createUseStyles({
   newSubmission: {
     display: "flex",
     justifyContent: "flex-end",
+    '& button': {
+      backgroundColor: '#e53e3e',
+      '&:hover': {
+        backgroundColor: '#c53030',
+      },
+    }
   },
   searchBar: {
     width: "100%",
