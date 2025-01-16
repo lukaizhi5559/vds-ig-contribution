@@ -22,8 +22,9 @@ import {
   useSubmission,
   useCreateSubmission,
   useUpdateSubmission,
-  Submission,
 } from "@/api/submissions";
+import { Submission } from "@/types";
+import useFigmaData from "@/hooks/useFigmaData";
 
 type CreateEditSubmissionProps = {
   submissionId?: number;
@@ -40,6 +41,9 @@ const CreateEditSubmission = ({
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
 
+  // Figma Data State
+  const [shouldGetFigmaData, setShouldGetFigmaData] = useState(false);
+
   // React State
   const [formData, setFormData] = useState<Submission>({
     id: 0,
@@ -48,7 +52,7 @@ const CreateEditSubmission = ({
     businessUseCase: "",
     createdAt: "",
     componentOrigin: "",
-    status: "In Progress",
+    status: "in progress",
     figmaFile: "",
     submittedBy: "",
     comments: [],
@@ -61,6 +65,9 @@ const CreateEditSubmission = ({
 
   const createSubmissionMutation = useCreateSubmission();
   const updateSubmissionMutation = useUpdateSubmission();
+
+  // Hook to fetch Figma data
+  const { processedData, status: figmaStatus, error: figmaError } = useFigmaData(formData.figmaFile, shouldGetFigmaData);
 
   // Populate form data when editing
   useEffect(() => {
@@ -88,32 +95,27 @@ const CreateEditSubmission = ({
       newErrors.title = "Title is required.";
     }
 
-    if (!formData.description?.trim()) {
-      newErrors.description = "Description is required.";
-    }
+    // Commented out for now as these fields are not required
+    // if (!formData.description?.trim()) {
+    //   newErrors.description = "Description is required.";
+    // }
 
-    if (!formData.businessUseCase?.trim()) {
-      newErrors.businessUseCase = "Business Use Case Description is required.";
-    }
+    // if (!formData.businessUseCase?.trim()) {
+    //   newErrors.businessUseCase = "Business Use Case Description is required.";
+    // }
 
-    if (!formData.componentOrigin?.trim()) {
-      newErrors.componentOrigin = "Component Origin is required.";
-    } else {
-      try {
-        new URL(formData.componentOrigin);
-      } catch {
-        newErrors.componentOrigin = "Component Origin must be a valid URL.";
-      }
-    }
+    // if (!formData.componentOrigin?.trim()) {
+    //   newErrors.componentOrigin = "Component Origin is required.";
+    // } else {
+    //   try {
+    //     new URL(formData.componentOrigin);
+    //   } catch {
+    //     newErrors.componentOrigin = "Component Origin must be a valid URL.";
+    //   }
+    // }
 
     if (!formData.figmaFile?.trim()) {
-      newErrors.componentOrigin = "A Figma File Url or File Key is required.";
-    } else {
-      try {
-        new URL(formData.figmaFile);
-      } catch {
-        newErrors.componentOrigin = "Figma File must be a valid URL.";
-      }
+      newErrors.figmaFile = "A Figma File URL or File Key is required.";
     }
 
     setErrors(newErrors);
@@ -131,9 +133,17 @@ const CreateEditSubmission = ({
     if (!validateForm()) {
       return;
     }
+    
+    if (figmaStatus === "error") {
+      toast({
+        title: "Figma Data Fetch Failed",
+        description: figmaError || "Unknown error fetching Figma data.",
+      });
+      return;
+    }
 
     if (isEdit && submissionId) {
-        const { title, description, businessUseCase, componentOrigin, figmaFile } =
+      const { title, description, businessUseCase, componentOrigin, figmaFile } =
         formData;
       updateSubmissionMutation.mutate(
         {
@@ -144,6 +154,7 @@ const CreateEditSubmission = ({
           componentOrigin,
           figmaFile,
           status: formData.status,
+          figmaData: processedData,
         },
         {
           onSuccess: () => {
@@ -172,7 +183,8 @@ const CreateEditSubmission = ({
           businessUseCase,
           componentOrigin,
           figmaFile,
-          status: "In Progress",
+          status: processedData?.status || "in progress",
+          figmaData: processedData,
         },
         {
           onSuccess: () => {
@@ -193,6 +205,14 @@ const CreateEditSubmission = ({
       );
     }
   };
+
+  // Trigger a submit
+  useEffect(() => {
+    if (figmaStatus === "success") {
+      handleSubmit();
+      console.log('PROCESS DATA:', status, processedData);
+    }
+  }, [figmaStatus]);
 
   if (isEdit && isLoading) {
     return <div>Loading submission details...</div>;
@@ -218,93 +238,109 @@ const CreateEditSubmission = ({
         </DialogHeader>
         <div className={styles.contentWrapper}>
           {/* Form Fields */}
-            <div className={styles.formGroup}>
-                <label htmlFor="title" className={styles.label}>
-                Title*
-                </label>
-                <Input
-                id="title"
-                name="title"
-                placeholder="Enter submission title"
-                value={formData.title}
-                onChange={handleInputChange}
-                className={styles.input}
-                />
-                {errors.title && (
-                <span className={styles.errorText}>{errors.title}</span>
-                )}
-            </div>
-          
-            <div className={styles.formGroup}>
-                <label htmlFor="description" className={styles.label}>
-                    Description
-                </label>
-                <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Enter submission description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className={styles.textarea}
-                />
-                {errors.description && (
-                    <span className={styles.errorText}>{errors.description}</span>
-                )}
-                </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="title" className={styles.label}>
+              Title*
+            </label>
+            <Input
+              id="title"
+              name="title"
+              placeholder="Enter submission title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className={styles.input}
+            />
+            {errors.title && (
+              <span className={styles.errorText}>{errors.title}</span>
+            )}
+          </div>
 
-                <div className={styles.formGroup}>
-                <label htmlFor="businessUseCase" className={styles.label}>
-                    Business Use Case Description
-                </label>
-                <Textarea
-                    id="businessUseCase"
-                    name="businessUseCase"
-                    placeholder="Enter business use case description"
-                    value={formData.businessUseCase}
-                    onChange={handleInputChange}
-                    className={styles.textarea}
-                />
-                {errors.businessUseCase && (
-                    <span className={styles.errorText}>{errors.businessUseCase}</span>
-                )}
-                </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="description" className={styles.label}>
+              Description
+            </label>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="Enter submission description"
+              value={formData.description}
+              onChange={handleInputChange}
+              className={styles.textarea}
+            />
+            {errors.description && (
+              <span className={styles.errorText}>{errors.description}</span>
+            )}
+          </div>
 
-                <div className={styles.formGroup}>
-                <label htmlFor="figmaFile" className={styles.label}>
-                    Figma File Origin*
-                </label>
-                <Input
-                    id="figmaFile"
-                    name="figmaFile"
-                    placeholder="Enter Figma File URL or File Key"
-                    value={formData.figmaFile}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                />
-                {errors.figmaFile && (
-                    <span className={styles.errorText}>{errors.figmaFile}</span>
-                )}
-                </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="businessUseCase" className={styles.label}>
+              Business Use Case Description
+            </label>
+            <Textarea
+              id="businessUseCase"
+              name="businessUseCase"
+              placeholder="Enter business use case description"
+              value={formData.businessUseCase}
+              onChange={handleInputChange}
+              className={styles.textarea}
+            />
+            {errors.businessUseCase && (
+              <span className={styles.errorText}>{errors.businessUseCase}</span>
+            )}
+          </div>
 
-                <div className={styles.formGroup}>
-                <label htmlFor="componentOrigin" className={styles.label}>
-                    Component Origin
-                </label>
-                <Input
-                    id="componentOrigin"
-                    name="componentOrigin"
-                    placeholder="Enter component origin URL"
-                    value={formData.componentOrigin}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                />
-                {errors.componentOrigin && (
-                    <span className={styles.errorText}>{errors.componentOrigin}</span>
-                )}
-            </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="figmaFile" className={styles.label}>
+              Figma File Origin*
+            </label>
+            <Input
+              id="figmaFile"
+              name="figmaFile"
+              placeholder="Enter Figma File URL or File Key"
+              value={formData.figmaFile}
+              onChange={handleInputChange}
+              className={styles.input}
+            />
+            {errors.figmaFile && (
+              <span className={styles.errorText}>{errors.figmaFile}</span>
+            )}
+            {figmaStatus === "loading" && <div>Loading Figma data...</div>}
+            {figmaStatus === "error" && (
+              <div className={styles.errorText}>{figmaError}</div>
+            )}
+            {figmaStatus === "success" && processedData && (
+              <div className={styles.successText}>
+                Figma data fetched successfully!
+              </div>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="componentOrigin" className={styles.label}>
+              Component Origin
+            </label>
+            <Input
+              id="componentOrigin"
+              name="componentOrigin"
+              placeholder="Enter component origin URL"
+              value={formData.componentOrigin}
+              onChange={handleInputChange}
+              className={styles.input}
+            />
+            {errors.componentOrigin && (
+              <span className={styles.errorText}>{errors.componentOrigin}</span>
+            )}
+          </div>
         </div>
         <DialogFooter className={styles.dialogFooter}>
-          <Button onClick={handleSubmit} className={styles.submitButton}>
+          <Button 
+            onClick={() => {
+              if (validateForm()) {
+                setShouldGetFigmaData(true)
+              }
+            }}
+            className={styles.submitButton}
+          >
             {isEdit ? "Update Submission" : "Save Submission"}
           </Button>
           <DialogClose asChild>

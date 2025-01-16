@@ -53,4 +53,14 @@ export const useCreateEditSubmissionStyles = createUseStyles({
       backgroundColor: "#e9ecef",
     },
   },
+  successText: {
+    color: "#28a745",
+    fontSize: "0.875rem",
+    fontWeight: "bold",
+    marginTop: "0.5rem",
+    "&::before": {
+      content: '"✓ "',
+      color: "#28a745",
+    },
+  },  
 });
