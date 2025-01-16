@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
 import ViewSubmissionModal from "@/components/modals/ViewSubmission";
+import FigmaParser from "@/components/FigmaParser"
 import { useLandingStyles } from "./ContributionDashboard.styles";
 import { useSubmissions } from "@/api/submissions";
 
@@ -95,6 +96,7 @@ const ContributionDashboard = () => {
           <Button variant="outline">{">"}</Button>
         </div>
       </div>
+      <FigmaParser fileKey="fBHxCQwWrV6H5q9c8KxHhs" />
     </div>
   );
 };

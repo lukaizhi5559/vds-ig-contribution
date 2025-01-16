@@ -85,7 +85,7 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
                 </div>
               ))
             ) : (
-              <p>No comments available</p>
+              <>No comments available</>
             )}
           </DialogDescription>
           <Textarea className={styles.textarea} placeholder="Add a comment..." />

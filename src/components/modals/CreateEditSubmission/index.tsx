@@ -49,7 +49,7 @@ const CreateEditSubmission = ({
     createdAt: "",
     componentOrigin: "",
     status: "In Progress",
-    figmaFile: null,
+    figmaFile: "",
     submittedBy: "",
     comments: [],
     activityLogs: [],
@@ -76,7 +76,7 @@ const CreateEditSubmission = ({
         submittedBy: submission.submittedBy,
         comments: submission.comments,
         activityLogs: submission.activityLogs,
-        figmaFile: null, // File input cannot be pre-filled
+        figmaFile: submission.figmaFile,
       });
     }
   }, [isEdit, submission]);
@@ -106,13 +106,14 @@ const CreateEditSubmission = ({
       }
     }
 
-    if (!formData.figmaFile) {
-      newErrors.figmaFile = "A Figma file is required.";
-    } else if (
-      formData.figmaFile.type !== "application/pdf" &&
-      !formData.figmaFile.name.endsWith(".fig")
-    ) {
-      newErrors.figmaFile = "Figma file must be a valid .fig or .pdf file.";
+    if (!formData.figmaFile?.trim()) {
+      newErrors.componentOrigin = "A Figma File Url or File Key is required.";
+    } else {
+      try {
+        new URL(formData.figmaFile);
+      } catch {
+        newErrors.componentOrigin = "Figma File must be a valid URL.";
+      }
     }
 
     setErrors(newErrors);
@@ -124,13 +125,6 @@ const CreateEditSubmission = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      figmaFile: e.target.files ? e.target.files[0] : null,
-    }));
   };
 
   const handleSubmit = async () => {
@@ -226,7 +220,7 @@ const CreateEditSubmission = ({
           {/* Form Fields */}
             <div className={styles.formGroup}>
                 <label htmlFor="title" className={styles.label}>
-                Title
+                Title*
                 </label>
                 <Input
                 id="title"
@@ -277,13 +271,14 @@ const CreateEditSubmission = ({
 
                 <div className={styles.formGroup}>
                 <label htmlFor="figmaFile" className={styles.label}>
-                    Figma File Upload
+                    Figma File Origin*
                 </label>
                 <Input
                     id="figmaFile"
                     name="figmaFile"
-                    type="file"
-                    onChange={handleFileChange}
+                    placeholder="Enter Figma File URL or File Key"
+                    value={formData.figmaFile}
+                    onChange={handleInputChange}
                     className={styles.input}
                 />
                 {errors.figmaFile && (

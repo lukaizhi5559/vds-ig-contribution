@@ -20,7 +20,7 @@ export type Submission = {
   activityLogs?: ActivityLog[]; // List of activity logs for the submission
   businessUseCase: string;
   componentOrigin: string;
-  figmaFile: File | null,
+  figmaFile: string,
 };
 
 // Fetch all submissions

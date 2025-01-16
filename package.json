@@ -37,6 +37,7 @@
     "url": "https://gitlab.verizon.com/cx-platforms/vds/vds-experimental/vds-ig-contribution"
   },
   "dependencies": {
+    "@andypf/json-viewer": "^2.1.7",
     "@fontsource/inter": "^5.1.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.1",

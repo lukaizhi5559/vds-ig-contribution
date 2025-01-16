@@ -29,6 +29,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@andypf/json-viewer@npm:^2.1.7":
+  version: 2.1.7
+  resolution: "@andypf/json-viewer@npm:2.1.7"
+  checksum: df4de6d753d511a7cc92db4c162743d2b0c063044eddcc76efb920fa420e9a0d0705c11e95df9b02c29f5770d4c0b4d3de397f0d9c441d9cfde0cd3569746e48
+  languageName: node
+  linkType: hard
+
 "@antfu/ni@npm:^0.21.4":
   version: 0.21.12
   resolution: "@antfu/ni@npm:0.21.12"
@@ -3539,6 +3546,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@vds/contribution@workspace:."
   dependencies:
+    "@andypf/json-viewer": ^2.1.7
     "@chromatic-com/storybook": 1.9.0
     "@fontsource/inter": ^5.1.0
     "@heroicons/react": ^2.2.0
