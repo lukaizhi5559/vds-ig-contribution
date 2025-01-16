@@ -10,7 +10,7 @@ import { use%name.pascal%Styles } from './%name.pascal%.styles';
 /**
  * Render the final JSX of %name.pascal%
  */
-export const %name.pascal%: React.FC<%name.pascal%Props> = (props: %name.pascal%Props) => {
+export const %name.pascal%: React.FC<React.PropsWithChildren<%name.pascal%Props>> = (props: %name.pascal%Props) => {
   const { children } = props;
   const styles = use%name.pascal%Styles();
 
