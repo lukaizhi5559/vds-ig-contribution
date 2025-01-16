@@ -11,12 +11,9 @@ import { UserProvider } from "@/context/UserContext";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "@/routes"; // Import the router created in Shell.tsx
 
-console.log('ENV VARIABLES:', process.env, process.env.VERCEL_ENV);
+console.log(process.env.NEXT_PUBLIC_VERCEL_ENV);
 
-if (
-  process.env.NODE_ENV === "development" || 
-  process.env.VERCEL_ENV === "preview" || 
-  process.env.VERCEL_ENV === "development") {
+if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview") {
     // Use dynamic import for ESM compatibility
     import("./mocks/browser").then(({ worker }) => {
       worker.start();
