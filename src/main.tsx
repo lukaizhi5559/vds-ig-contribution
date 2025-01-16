@@ -11,11 +11,16 @@ import { UserProvider } from "@/context/UserContext";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "@/routes"; // Import the router created in Shell.tsx
 
-if (process.env.NODE_ENV === "development") {
-  // Use dynamic import for ESM compatibility
-  import("./mocks/browser").then(({ worker }) => {
-    worker.start();
-  });
+console.log(process.env.VITE_VERCEL_ENV);
+
+const environment = process.env.VITE_VERCEL_ENV || 'preview';
+
+// Mock service worker in development
+if (process.env.NODE_ENV === "development" || environment === 'preview') {
+    // Use dynamic import for ESM compatibility
+    import("./mocks/browser").then(({ worker }) => {
+      worker.start();
+    });
 }
 
 const root = ReactDOM.createRoot(
