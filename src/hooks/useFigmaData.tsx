@@ -2,36 +2,25 @@
  * Copyright (C) Verizon. All rights reserved.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { ImportMetaWithEnv, UseFigmaDataReturn, FigmaData, FigmaNode, ProcessedData } from "@/types";
 import { extractFileKey } from "@/lib/utils";
 
 const FIGMA_API_URL = "https://api.figma.com/v1/files";
 const FIGMA_API_TOKEN = (import.meta as ImportMetaWithEnv).env.VITE_FIGMA_API_TOKEN || "";
 
-const useFigmaData = (
-  fileKeyOrUrl: string,
-  shouldFigmaData = false
-): UseFigmaDataReturn => {
+const useFigmaData = (): UseFigmaDataReturn => {
   const [fileData, setFileData] = useState<FigmaData | null>(null);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "in progress" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  // const extractFileKey = useCallback((fileKeyOrUrl: string): string => {
-  //   if (!fileKeyOrUrl) return "";
+  const fetchFigmaData = useCallback(async (file: string): Promise<void> => {
+    if (!file) return;
 
-  //   // Match for the format "design/<fileKey>/"
-  //   const urlPattern = /design\/([a-zA-Z0-9]+)\//;
-  //   const match = fileKeyOrUrl.match(urlPattern);
-
-  //   return match ? match[1] : fileKeyOrUrl;
-  // }, []);
-
-  const fetchFigmaData = useCallback(async (fileKey: string): Promise<void> => {
-    if (!fileKey) return;
+    const fileKey = extractFileKey(file);
 
     try {
-      setStatus("loading");
+      setStatus("in progress");
       const response = await fetch(`${FIGMA_API_URL}/${fileKey}`, {
         headers: {
           "X-FIGMA-TOKEN": FIGMA_API_TOKEN,
@@ -65,12 +54,10 @@ const useFigmaData = (
         message: [],
       };
 
-      // Check for Figma Usage Guide frame
       if (node.name && node.name.toLowerCase().includes("figma usage guide")) {
         results.usageGuideFrame = node;
       }
 
-      // Check for frame type in componentPropertyDefinitions
       if (
         node.componentPropertyDefinitions &&
         node.componentPropertyDefinitions?.use?.type === "VARIANT"
@@ -78,7 +65,6 @@ const useFigmaData = (
         results.frameNodes.push(node);
       }
 
-      // Check for VARIANT type
       if (node.type === "FRAME" && node.children) {
         for (const child of node.children) {
           if (child.type === "VARIANT" && child.name) {
@@ -87,12 +73,10 @@ const useFigmaData = (
         }
       }
 
-      // Check for main_component 
       if (node.type === "INSTANCE" && node.name?.includes('[main-component]')) {
-          results.mainComponent.push(node);
+        results.mainComponent.push(node);
       }
 
-      // Recursively traverse children
       if (node.children) {
         for (const child of node.children) {
           results.childNames.push(child.name || "");
@@ -109,22 +93,20 @@ const useFigmaData = (
 
     const rootResults = traverse(data.document);
 
-    // Determine status and message
-
     if (rootResults.frameNodes.length === 0) {
       rootResults.status = "rejected";
       rootResults.message.push("Variant could not be found.");
-    } 
-    
+    }
+
     if (!rootResults.usageGuideFrame) {
       rootResults.status = "rejected";
       rootResults.message.push("Figma Usage Guide frame is missing.");
-    }  
-    
+    }
+
     if (rootResults.mainComponent.length === 0) {
       rootResults.status = "rejected";
       rootResults.message.push("Main Component Instance is missing.");
-    } 
+    }
 
     if (rootResults.status === "in progress") {
       rootResults.status = "success";
@@ -139,14 +121,9 @@ const useFigmaData = (
     };
   }, []);
 
-  useEffect(() => {
-    const fileKey = extractFileKey(fileKeyOrUrl);
-    if (fileKey && shouldFigmaData) fetchFigmaData(fileKey);
-  }, [fileKeyOrUrl, extractFileKey, fetchFigmaData, shouldFigmaData]);
-
   const processedData = fileData ? processFigmaData(fileData) : null;
 
-  return { fileData, processedData, status, error };
+  return { fileData, processedData, status, error, fetchFigmaData };
 };
 
 export default useFigmaData;

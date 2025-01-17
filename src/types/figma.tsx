@@ -38,6 +38,7 @@ export type ProcessedData = {
 export type UseFigmaDataReturn = {
     fileData: FigmaData | null;
     processedData: ProcessedData | null;
-    status: "idle" | "loading" | "success" | "error";
+    status: "idle" | "in progress" | "success" | "error" | "rejected";
     error: string | null;
+    fetchFigmaData: (fileKey: string) => Promise<void>;
 };
