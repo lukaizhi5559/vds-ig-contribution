@@ -178,7 +178,7 @@ const ContributionDashboard = () => {
                       >
                         {submission.figmaData.status}
                       </span>
-                      {submission.status !== "success" && submission.figmaData && (
+                      {submission?.figmaData?.status !== "success" && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
