@@ -3,52 +3,11 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { ImportMetaWithEnv, UseFigmaDataReturn, FigmaData, FigmaNode, ProcessedData } from "@/types";
+import { extractFileKey } from "@/lib/utils";
 
 const FIGMA_API_URL = "https://api.figma.com/v1/files";
 const FIGMA_API_TOKEN = (import.meta as ImportMetaWithEnv).env.VITE_FIGMA_API_TOKEN || "";
-
-interface ImportMetaWithEnv extends ImportMeta {
-  env: {
-    VITE_FIGMA_API_TOKEN: string;
-  };
-}
-
-type FigmaNode = {
-  name?: string;
-  type?: string;
-  children?: FigmaNode[];
-  componentPropertyDefinitions?: {
-    use?: {
-      type?: string;
-    };
-  };
-};
-
-type FigmaData = {
-  name?: string;
-  thumbnailUrl?: string;
-  lastModified?: string;
-  document?: FigmaNode;
-};
-
-type ProcessedData = {
-  usageGuideFrame: FigmaNode | null;
-  variantFrames: string[];
-  childNames: string[];
-  frameNodes: FigmaNode[];
-  name?: string;
-  thumbnailUrl?: string;
-  lastModified?: string;
-  status: "success" | "rejected" | "error";
-  message: string;
-};
-
-type UseFigmaDataReturn = {
-  fileData: FigmaData | null;
-  processedData: ProcessedData | null;
-  status: "idle" | "loading" | "success" | "error";
-  error: string | null;
-};
 
 const useFigmaData = (
   fileKeyOrUrl: string,
@@ -58,15 +17,15 @@ const useFigmaData = (
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const extractFileKey = useCallback((fileKeyOrUrl: string): string => {
-    if (!fileKeyOrUrl) return "";
+  // const extractFileKey = useCallback((fileKeyOrUrl: string): string => {
+  //   if (!fileKeyOrUrl) return "";
 
-    // Match for the format "design/<fileKey>/"
-    const urlPattern = /design\/([a-zA-Z0-9]+)\//;
-    const match = fileKeyOrUrl.match(urlPattern);
+  //   // Match for the format "design/<fileKey>/"
+  //   const urlPattern = /design\/([a-zA-Z0-9]+)\//;
+  //   const match = fileKeyOrUrl.match(urlPattern);
 
-    return match ? match[1] : fileKeyOrUrl;
-  }, []);
+  //   return match ? match[1] : fileKeyOrUrl;
+  // }, []);
 
   const fetchFigmaData = useCallback(async (fileKey: string): Promise<void> => {
     if (!fileKey) return;
@@ -98,11 +57,12 @@ const useFigmaData = (
     const traverse = (node: FigmaNode): ProcessedData => {
       let results: ProcessedData = {
         usageGuideFrame: null,
+        mainComponent: [],
         variantFrames: [],
         childNames: [],
         frameNodes: [],
-        status: "success",
-        message: "",
+        status: "in progress",
+        message: [],
       };
 
       // Check for Figma Usage Guide frame
@@ -127,6 +87,11 @@ const useFigmaData = (
         }
       }
 
+      // Check for main_component 
+      if (node.type === "INSTANCE" && node.name?.includes('[main-component]')) {
+          results.mainComponent.push(node);
+      }
+
       // Recursively traverse children
       if (node.children) {
         for (const child of node.children) {
@@ -135,6 +100,7 @@ const useFigmaData = (
           results.usageGuideFrame = results.usageGuideFrame || childResults.usageGuideFrame;
           results.variantFrames = [...results.variantFrames, ...childResults.variantFrames];
           results.frameNodes = [...results.frameNodes, ...childResults.frameNodes];
+          results.mainComponent = [...results.mainComponent, ...childResults.mainComponent];
         }
       }
 
@@ -144,15 +110,25 @@ const useFigmaData = (
     const rootResults = traverse(data.document);
 
     // Determine status and message
+
     if (rootResults.frameNodes.length === 0) {
       rootResults.status = "rejected";
-      rootResults.message = "Variant could not be found.";
-    } else if (!rootResults.usageGuideFrame) {
+      rootResults.message.push("Variant could not be found.");
+    } 
+    
+    if (!rootResults.usageGuideFrame) {
       rootResults.status = "rejected";
-      rootResults.message = "Figma Usage Guide frame is missing.";
-    } else {
+      rootResults.message.push("Figma Usage Guide frame is missing.");
+    }  
+    
+    if (rootResults.mainComponent.length === 0) {
+      rootResults.status = "rejected";
+      rootResults.message.push("Main Component Instance is missing.");
+    } 
+
+    if (rootResults.status === "in progress") {
       rootResults.status = "success";
-      rootResults.message = "Figma data processed successfully.";
+      rootResults.message = ["Figma data processed successfully."];
     }
 
     return {

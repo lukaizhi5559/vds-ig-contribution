@@ -1,3 +1,9 @@
+export interface ImportMetaWithEnv extends ImportMeta {
+  env: {
+    VITE_FIGMA_API_TOKEN: string;
+  };
+}
+
 export type FigmaNode = {
     name?: string;
     type?: string;
@@ -14,10 +20,11 @@ export type FigmaData = {
     thumbnailUrl?: string;
     lastModified?: string;
     document?: FigmaNode;
-  };
+};
   
 export type ProcessedData = {
     usageGuideFrame: FigmaNode | null;
+    mainComponent: FigmaNode[];
     variantFrames: string[];
     childNames: string[];
     frameNodes: FigmaNode[];
@@ -25,8 +32,8 @@ export type ProcessedData = {
     thumbnailUrl?: string;
     lastModified?: string;
     status: "in progress" | "success" | "error" | "rejected";
-    message: string;
-  };
+    message: string[];
+};
   
 export type UseFigmaDataReturn = {
     fileData: FigmaData | null;

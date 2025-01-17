@@ -21,3 +21,13 @@ export function getInitials(name: string | undefined) {
     .map(part => part.charAt(0).toUpperCase()) // Get the first letter of each part and make it uppercase
     .join(""); // Join the initials together
 }
+
+export const extractFileKey = (fileKeyOrUrl: string): string => {
+    if (!fileKeyOrUrl) return "";
+
+    // Match for the format "design/<fileKey>/"
+    const urlPattern = /design\/([a-zA-Z0-9]+)\//;
+    const match = fileKeyOrUrl.match(urlPattern);
+
+    return match ? match[1] : fileKeyOrUrl;
+};

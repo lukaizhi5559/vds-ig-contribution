@@ -98,12 +98,14 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
                 ) : (
                   "N/A"
                 )}
-              <div>
-                <strong>Status:</strong> {processedData.status}
-              </div>
-              <div>
-                <strong>Message:</strong> {processedData.message}
-              </div>
+                <div>
+                  <strong>Status:</strong> {submission?.status}
+                </div>
+                <div>
+                  <strong>Message:</strong> {
+                    processedData.message.map((msg, index) => <div key={index}>{msg}</div>)
+                  }
+                </div>
               </div>
               <div>
                 <strong>Last Modified:</strong> {processedData.lastModified || "N/A"}
