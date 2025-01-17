@@ -41,23 +41,7 @@ const ContributionDashboard = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<number | null>(null);
   const [loadingStatuses, setLoadingStatuses] = useState<Record<number, boolean>>({});
-
-  useEffect(() => {
-    if (submissions) {
-      const newLoadingStatuses: Record<number, boolean> = {};
-      submissions.forEach((submission) => {
-        if (submission.id !== undefined) {
-          newLoadingStatuses[submission.id] = true;
-        }
-        setTimeout(() => {
-          if (submission.id !== undefined) {
-            setLoadingStatuses((prev) => ({ ...prev, [submission.id as number]: false }));
-          }
-        }, 2000); // 2-second delay
-      });
-      setLoadingStatuses(newLoadingStatuses);
-    }
-  }, [submissions]);
+  const [refresh, setRefresh] = useState(false);
 
   const handleDelete = (submissionId: number | undefined) => {
     if (submissionId !== undefined) {
@@ -92,7 +76,26 @@ const ContributionDashboard = () => {
 
   const handleModalSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["submissions"] }); // Refetch submissions after adding or updating
+    setRefresh((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (submissions) {
+      const newLoadingStatuses: Record<number, boolean> = {};
+      submissions.forEach((submission) => {
+        if (submission.id !== undefined) {
+          newLoadingStatuses[submission.id] = true;
+        }
+        setTimeout(() => {
+          if (submission.id !== undefined) {
+            setLoadingStatuses((prev) => ({ ...prev, [submission.id as number]: false }));
+          }
+        }, 2000); // 2-second delay
+        console.log("Submission status updated", submission);
+      });
+      setLoadingStatuses(newLoadingStatuses);
+    }
+  }, [submissions, refresh]);
 
   if (isLoading) {
     return <div className={styles.loading}>Loading submissions...</div>;
@@ -105,8 +108,6 @@ const ContributionDashboard = () => {
       </div>
     );
   }
-
-  console.log("submissions", submissions);
 
   return (
     <div className={styles.root}>
@@ -140,7 +141,7 @@ const ContributionDashboard = () => {
               <TableRow key={submission.id}>
                 <TableCell>{submission.title}</TableCell>
                 <TableCell>
-                  {submission.id !== undefined && loadingStatuses[submission.id] ? (
+                  {!submission.figmaData || submission.status === "in progress" ? (
                     <div className="flex items-center">
                       <svg
                         className="animate-spin h-5 w-5 text-gray-500 mr-2"
@@ -168,14 +169,14 @@ const ContributionDashboard = () => {
                     <div className="flex items-center space-x-2">
                       <span
                         className={
-                          submission.status.toLowerCase() === "success"
+                          submission.figmaData.status.toLowerCase() === "success"
                             ? "text-green-600"
-                            : submission.status.toLowerCase() === "rejected"
+                            : submission.figmaData.status.toLowerCase() === "rejected"
                             ? "text-red-500"
                             : "text-orange-500"
                         }
                       >
-                        {submission.status}
+                        {submission.figmaData.status}
                       </span>
                       {submission.status !== "success" && submission.figmaData && (
                         <TooltipProvider>
@@ -217,11 +218,13 @@ const ContributionDashboard = () => {
                 <TableCell>
                   <div className="flex space-x-2">
                     {/* View Submission Modal */}
-                    <ViewSubmissionModal submissionId={submission.id} />
+                    <ViewSubmissionModal 
+                      submission={submission} 
+                    />
                     {/* Edit Submission Modal */}
                     <CreateEditSubmissionModal
                       isEdit
-                      submissionId={submission.id}
+                      submission={submission}
                       onSuccess={handleModalSuccess}
                     />
                     {/* Delete Submission Button with Trash Icon */}

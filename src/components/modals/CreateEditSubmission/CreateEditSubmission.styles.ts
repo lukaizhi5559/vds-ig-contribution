@@ -63,4 +63,14 @@ export const useCreateEditSubmissionStyles = createUseStyles({
       color: "#28a745",
     },
   },  
+  rejectedText: {
+    color: "#ff4d4f",
+    fontSize: "0.875rem",
+    fontWeight: "bold",
+    marginTop: "0.5rem",
+    "&::before": {
+      content: '"✗ "',
+      color: "#ff4d4f",
+    },
+  }
 });

@@ -19,30 +19,17 @@ import {
 import { useViewSubmissionStyles } from "./ViewSubmission.styles";
 import { useSubmission } from "@/api/submissions";
 import useFigmaData from "@/hooks/useFigmaData";
+import { Submission } from "@/types";
 
 type ViewSubmissionModalProps = {
-  submissionId: number | undefined;
+  submission: Submission | undefined;
 };
 
-const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
+const ViewSubmissionModal = ({ submission }: ViewSubmissionModalProps) => {
   const styles = useViewSubmissionStyles();
 
-  // Fetch submission details using useSubmission
-  const { data: submission, isLoading, error } = useSubmission(submissionId || 0);
-
   // Use Figma data hook with the figmaFile from submission
-  const { processedData, status: figmaStatus, error: figmaError } = useFigmaData(
-    submission?.figmaFile || "",
-    !!submission?.figmaFile
-  );
-
-  if (isLoading) {
-    return <div>Loading submission...</div>;
-  }
-
-  if (error) {
-    return <div>Failed to load submission details. Please try again later.</div>;
-  }
+  // const { processedData, status: figmaStatus, error: figmaError , fetchFigmaData } = useFigmaData();
 
   const comments = submission?.comments || []; // Assume `comments` is part of the submission data
   const activityLogs = submission?.activityLogs || []; // Assume `activityLogs` is part of the submission data
@@ -52,18 +39,19 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
       <DialogTrigger asChild>
         <Button variant="outline">View</Button>
       </DialogTrigger>
+      <DialogDescription></DialogDescription>
       <DialogContent className={styles.dialogContent}>
         <DialogHeader>
           <DialogTitle>View Submission</DialogTitle>
         </DialogHeader>
-
+        
         {/* Metadata Section */}
         <div className={styles.section}>
           <div>
             <strong>Title:</strong> {submission?.title || "N/A"}
           </div>
           <div>
-            <strong>Status:</strong> {submission?.status || "N/A"}
+            <strong>Status:</strong> {submission?.figmaData?.status || "N/A"}
           </div>
           <div>
             <strong>Submission Date:</strong> {submission?.createdAt || "N/A"}
@@ -78,37 +66,28 @@ const ViewSubmissionModal = ({ submissionId }: ViewSubmissionModalProps) => {
         {/* Figma File Data Section */}
         <div className={styles.section}>
           <h2>Figma File Data</h2>
-          {figmaStatus === "loading" && <div>Loading Figma data...</div>}
-          {figmaStatus === "error" && (
-            <div className={styles.errorText}>{figmaError || "Failed to fetch Figma data."}</div>
-          )}
-          {figmaStatus === "success" && processedData && (
+          {submission?.figmaData && (
             <div>
               <div>
-                <strong>Name:</strong> {processedData.name || "N/A"}
+                <strong>Name:</strong> {submission?.figmaData.name || "N/A"}
               </div>
               <div>
                 <strong>Thumbnail:</strong>{" "}
-                {processedData.thumbnailUrl ? (
+                {submission?.figmaData.thumbnailUrl ? (
                   <img
-                    src={processedData.thumbnailUrl}
+                    src={submission?.figmaData.thumbnailUrl}
                     alt="Thumbnail"
                     style={{ width: "100px", height: "auto" }}
                   />
                 ) : (
                   "N/A"
                 )}
-                <div>
-                  <strong>Status:</strong> {submission?.status}
-                </div>
-                <div>
-                  <strong>Message:</strong> {
-                    processedData.message.map((msg, index) => <div key={index}>{msg}</div>)
-                  }
-                </div>
+              <div>
+                <strong>Message:</strong> {submission?.figmaData.message}
+              </div>
               </div>
               <div>
-                <strong>Last Modified:</strong> {processedData.lastModified || "N/A"}
+                <strong>Last Modified:</strong> {submission?.figmaData.lastModified || "N/A"}
               </div>
             </div>
           )}
