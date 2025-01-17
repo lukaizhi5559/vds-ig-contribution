@@ -16,7 +16,7 @@ console.log(process.env.VITE_VERCEL_ENV);
 const environment = process.env.VITE_VERCEL_ENV || 'preview';
 
 // Mock service worker in development
-if (process.env.NODE_ENV === "development" || environment === 'preview') {
+if (process.env.NODE_ENV === "development") {
     // Use dynamic import for ESM compatibility
     import("./mocks/browser").then(({ worker }) => {
       worker.start();

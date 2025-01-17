@@ -10,29 +10,7 @@ const users = [
   { id: 3, name: "Test Name", email: "test1@verizon.com", password: "password" },
 ];
 
-let submissions = [
-  {
-    id: 1,
-    title: "Submission 1",
-    description: "This is the first submission.",
-    status: "success",
-    createdAt: "2024-12-27T12:00:00Z",
-  },
-  {
-    id: 2,
-    title: "Submission 2",
-    description: "This is the second submission.",
-    status: "pending",
-    createdAt: "2024-12-26T12:00:00Z",
-  },
-  {
-    id: 3,
-    title: "Submission 3",
-    description: "This is the third submission.",
-    status: "rejected",
-    createdAt: "2024-12-25T12:00:00Z",
-  },
-];
+let submissions = [];
 
 export const handlers = [
   // Get all users
@@ -112,6 +90,7 @@ export const handlers = [
       businessUseCase,
       componentOrigin,
       figmaFile,
+      figmaData,
     } = await request.json();
   
     const newSubmission = {
@@ -123,6 +102,7 @@ export const handlers = [
       businessUseCase,
       componentOrigin,
       figmaFile,
+      figmaData,
     };
 
     submissions.push(newSubmission);
