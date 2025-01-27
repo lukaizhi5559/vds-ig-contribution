@@ -10,7 +10,63 @@ const users = [
   { id: 3, name: "Test Name", email: "test1@verizon.com", password: "password" },
 ];
 
-let submissions = [];
+// Generate mock data
+const generateMockSubmissions = (numSubmissions) => {
+  const statuses = ["in progress", "success", "error", "rejected"];
+
+  const mockComments = (submissionId) => [
+    {
+      user: `User ${submissionId}-1`,
+      timestamp: new Date(Date.now() - submissionId * 1000 * 60 * 60).toISOString(),
+      text: `This is a comment on submission ${submissionId}.`,
+    },
+    {
+      user: `User ${submissionId}-2`,
+      timestamp: new Date(Date.now() - submissionId * 1000 * 60 * 45).toISOString(),
+      text: `Another comment on submission ${submissionId}.`,
+    },
+  ];
+
+  const mockActivityLogs = (submissionId) => [
+    `Submission ${submissionId} created.`,
+    `Submission ${submissionId} updated.`,
+    `Submission ${submissionId} reviewed.`,
+  ];
+
+  return Array.from({ length: numSubmissions }, (_, index) => {
+    const id = index + 1;
+    return {
+      id,
+      title: `Submission Title ${id}`,
+      description: `This is the description for submission ${id}.`,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      createdAt: new Date(Date.now() - id * 1000 * 60 * 60 * 24).toISOString(),
+      submittedBy: `User ${Math.ceil(id / 10)}`, // Group submissions by user
+      comments: mockComments(id),
+      activityLogs: mockActivityLogs(id),
+      businessUseCase: `Business Use Case for submission ${id}`,
+      componentOrigin: `https://example.com/component/${id}`,
+      figmaFile: `https://www.figma.com/file/mockFile${id}`,
+      figmaData: {
+        usageGuideFrame: null,
+        mainComponent: [],
+        variantFrames: [],
+        childNames: [],
+        frameNodes: [],
+        status: "in progress",
+        message: [`Mock message for submission ${id}`],
+        name: `Mock File ${id}`,
+        thumbnailUrl: `https://example.com/thumbnail${id}.png`,
+        lastModified: new Date(Date.now() - id * 1000 * 60 * 60 * 12).toISOString(),
+      },
+    };
+  });
+};
+
+// Generate 50 mock submissions
+let submissions = generateMockSubmissions(50);
+
+// let submissions = [];
 
 export const handlers = [
   // Get all users
