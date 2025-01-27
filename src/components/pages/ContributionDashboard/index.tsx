@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
 import ViewSubmissionModal from "@/components/modals/ViewSubmission";
 import { useLandingStyles } from "./ContributionDashboard.styles";
@@ -40,8 +41,8 @@ const ContributionDashboard = () => {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<number | null>(null);
-  const [loadingStatuses, setLoadingStatuses] = useState<Record<number, boolean>>({});
-  const [refresh, setRefresh] = useState(false);
+  const [filters, setFilters] = useState({ title: "", status: "", date: "", description: "" });
+  const [filteredSubmissions, setFilteredSubmissions] = useState(submissions || []);
 
   const handleDelete = (submissionId: number | undefined) => {
     if (submissionId !== undefined) {
@@ -60,7 +61,7 @@ const ContributionDashboard = () => {
           });
           setIsConfirmOpen(false);
           setSubmissionToDelete(null);
-          queryClient.invalidateQueries({ queryKey: ["submissions"] }); // Refetch submissions after deletion
+          queryClient.invalidateQueries({ queryKey: ["submissions"] });
         },
         onError: (err) => {
           toast({
@@ -74,28 +75,28 @@ const ContributionDashboard = () => {
     }
   };
 
-  const handleModalSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["submissions"] }); // Refetch submissions after adding or updating
-    setRefresh((prev) => !prev);
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   useEffect(() => {
     if (submissions) {
-      const newLoadingStatuses: Record<number, boolean> = {};
-      submissions.forEach((submission) => {
-        if (submission.id !== undefined) {
-          newLoadingStatuses[submission.id] = true;
-        }
-        setTimeout(() => {
-          if (submission.id !== undefined) {
-            setLoadingStatuses((prev) => ({ ...prev, [submission.id as number]: false }));
-          }
-        }, 2000); // 2-second delay
-        console.log("Submission status updated", submission);
+      const filtered = submissions.filter((submission) => {
+        const titleMatch = submission.title.toLowerCase().includes(filters.title.toLowerCase());
+        const statusMatch =
+          !filters.status || submission.status.toLowerCase() === filters.status.toLowerCase();
+        const descriptionMatch = submission.description
+          .toLowerCase()
+          .includes(filters.description.toLowerCase());
+        const dateMatch =
+          !filters.date ||
+          new Date(submission.createdAt).toLocaleDateString() === filters.date;
+
+        return titleMatch && statusMatch && descriptionMatch && dateMatch;
       });
-      setLoadingStatuses(newLoadingStatuses);
+      setFilteredSubmissions(filtered);
     }
-  }, [submissions, refresh]);
+  }, [filters, submissions]);
 
   if (isLoading) {
     return <div className={styles.loading}>Loading submissions...</div>;
@@ -118,12 +119,47 @@ const ContributionDashboard = () => {
 
           {/* New Submission Button */}
           <div className={styles.newSubmission}>
-            <CreateEditSubmissionModal onSuccess={handleModalSuccess} />
+            <CreateEditSubmissionModal onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })} />
           </div>
         </div>
 
-        {/* Search Bar */}
-        <Input placeholder="Search by title or user" className="mb-4" />
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 mb-4">
+          <Input
+            placeholder="Search by title"
+            value={filters.title}
+            onChange={(e) => handleFilterChange("title", e.target.value)}
+            className="flex-1"
+          />
+          <Select
+            onValueChange={(value) => handleFilterChange("status", value)}
+            defaultValue="all" // Set a non-empty default value for clarity
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem> {/* Update empty string to "all" */}
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="success">Success</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="error">Error</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            type="date"
+            placeholder="Search by date"
+            value={filters.date}
+            onChange={(e) => handleFilterChange("date", e.target.value)}
+            className="flex-1"
+          />
+          <Input
+            placeholder="Search by description"
+            value={filters.description}
+            onChange={(e) => handleFilterChange("description", e.target.value)}
+            className="flex-1"
+          />
+        </div>
 
         {/* Table */}
         <Table>
@@ -137,7 +173,7 @@ const ContributionDashboard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {submissions?.map((submission) => (
+            {filteredSubmissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>{submission.title}</TableCell>
                 <TableCell>
@@ -218,16 +254,14 @@ const ContributionDashboard = () => {
                 <TableCell>
                   <div className="flex space-x-2">
                     {/* View Submission Modal */}
-                    <ViewSubmissionModal 
-                      submission={submission} 
-                    />
+                    <ViewSubmissionModal submission={submission} />
                     {/* Edit Submission Modal */}
                     <CreateEditSubmissionModal
                       isEdit
                       submission={submission}
-                      onSuccess={handleModalSuccess}
+                      onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })}
                     />
-                    {/* Delete Submission Button with Trash Icon */}
+                    {/* Delete Submission Button */}
                     <Button
                       variant="outline"
                       onClick={() => handleDelete(submission.id)}
