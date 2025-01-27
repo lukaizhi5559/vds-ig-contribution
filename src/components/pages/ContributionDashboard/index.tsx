@@ -16,6 +16,7 @@ import {
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
 import ViewSubmissionModal from "@/components/modals/ViewSubmission";
+import { Pagination, PaginationPrevious, PaginationContent, PaginationItem, PaginationLink, PaginationNext } from "@/components/ui/pagination"; // Import Pagination
 import { useLandingStyles } from "./ContributionDashboard.styles";
 import { useSubmissions, useDeleteSubmission } from "@/api/submissions";
 import {
@@ -30,6 +31,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { extractFileKey } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 10; // Define the number of rows per page
 
 const ContributionDashboard = () => {
   const styles = useLandingStyles();
@@ -48,6 +51,7 @@ const ContributionDashboard = () => {
     endDate: "",
   });
   const [filteredSubmissions, setFilteredSubmissions] = useState(submissions || []);
+  const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
 
   const handleDelete = (submissionId: number | undefined) => {
     if (submissionId !== undefined) {
@@ -82,6 +86,7 @@ const ContributionDashboard = () => {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to the first page whenever filters change
   };
 
   useEffect(() => {
@@ -92,28 +97,35 @@ const ContributionDashboard = () => {
           submission.description.toLowerCase().includes(filters.search.toLowerCase());
         const statusMatch =
           filters.status === "all" || submission.status.toLowerCase() === filters.status.toLowerCase();
-        
+
         const dateMatch = (() => {
-            if (!filters.startDate && !filters.endDate) return true;
-            const submissionDate = new Date(submission.createdAt);
-            const startDate = filters.startDate ? new Date(filters.startDate) : null;
-            const endDate = filters.endDate ? new Date(filters.endDate) : null;
-  
-            if (startDate && endDate) {
-              return submissionDate >= startDate && submissionDate <= endDate;
-            } else if (startDate) {
-              return submissionDate >= startDate;
-            } else if (endDate) {
-              return submissionDate <= endDate;
-            }
-            return true;
-          })();
+          if (!filters.startDate && !filters.endDate) return true;
+          const submissionDate = new Date(submission.createdAt);
+          const startDate = filters.startDate ? new Date(filters.startDate) : null;
+          const endDate = filters.endDate ? new Date(filters.endDate) : null;
+
+          if (startDate && endDate) {
+            return submissionDate >= startDate && submissionDate <= endDate;
+          } else if (startDate) {
+            return submissionDate >= startDate;
+          } else if (endDate) {
+            return submissionDate <= endDate;
+          }
+          return true;
+        })();
 
         return searchMatch && statusMatch && dateMatch;
       });
       setFilteredSubmissions(filtered);
     }
   }, [filters, submissions]);
+
+  // Calculate current page data
+  const totalPages = Math.ceil(filteredSubmissions.length / ITEMS_PER_PAGE);
+  const paginatedSubmissions = filteredSubmissions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading) {
     return <div className={styles.loading}>Loading submissions...</div>;
@@ -129,12 +141,9 @@ const ContributionDashboard = () => {
 
   return (
     <div className={styles.root}>
-      {/* Main Content */}
       <div className={styles.container}>
         <div className={styles.titleWrapper}>
           <div className={styles.title}>Contribution Model Dashboard</div>
-
-          {/* New Submission Button */}
           <div className={styles.newSubmission}>
             <CreateEditSubmissionModal onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })} />
           </div>
@@ -181,6 +190,12 @@ const ContributionDashboard = () => {
           </div>
         </div>
 
+
+        {/* Breadcrumb */}
+        <div className={styles.pageBreadcrumb}>
+            Page {currentPage} of {totalPages}
+        </div>
+
         {/* Table */}
         <Table>
           <TableHeader>
@@ -193,10 +208,9 @@ const ContributionDashboard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSubmissions.map((submission) => (
+            {paginatedSubmissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>{submission.title}</TableCell>
-                <TableCell>{submission.status}</TableCell>
                 <TableCell>
                   {!submission.figmaData || submission.status === "in progress" ? (
                     <div className="flex items-center">
@@ -273,7 +287,6 @@ const ContributionDashboard = () => {
                 <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>{submission.description}</TableCell>
                 <TableCell>
-                  {/* Actions */}
                   <div className="flex space-x-2">
                     <ViewSubmissionModal submission={submission} />
                     <CreateEditSubmissionModal
@@ -331,33 +344,64 @@ const ContributionDashboard = () => {
           </TableBody>
         </Table>
 
-        {/* Pagination */}
+        {/* Pagination */}       
         <div className={styles.pagination}>
-          <Button variant="outline">{"<"}</Button>
-          <span>Page 1 of 3</span>
-          <Button variant="outline">{">"}</Button>
+          <Pagination>
+            {/* Previous Button */}
+            {currentPage > 1 && (
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              />
+            )}
+
+            {/* Page Numbers */}
+            <PaginationContent>
+              {Array.from({ length: totalPages }).map((_, index) => {
+                const pageNumber = index + 1;
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      isActive={currentPage === pageNumber} // Highlight current page
+                      onClick={() => setCurrentPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+            </PaginationContent>
+
+            {/* Next Button */}
+            {currentPage < totalPages && (
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+              />
+            )}
+          </Pagination>
         </div>
       </div>
 
-        {/* Confirmation Dialog */}
-        <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Delete</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">Are you sure you want to delete this submission?</div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Delete
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">Are you sure you want to delete this submission?</div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
+                Cancel
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogClose>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
