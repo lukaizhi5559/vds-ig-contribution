@@ -53,7 +53,7 @@ const generateMockSubmissions = (numSubmissions) => {
         variantFrames: [],
         childNames: [],
         frameNodes: [],
-        status: "in progress",
+        status: statuses[Math.floor(Math.random() * statuses.length)],
         message: [`Mock message for submission ${id}`],
         name: `Mock File ${id}`,
         thumbnailUrl: `https://example.com/thumbnail${id}.png`,

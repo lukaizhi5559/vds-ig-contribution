@@ -41,7 +41,12 @@ const ContributionDashboard = () => {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<number | null>(null);
-  const [filters, setFilters] = useState({ title: "", status: "", date: "", description: "" });
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    startDate: "",
+    endDate: "",
+  });
   const [filteredSubmissions, setFilteredSubmissions] = useState(submissions || []);
 
   const handleDelete = (submissionId: number | undefined) => {
@@ -82,17 +87,29 @@ const ContributionDashboard = () => {
   useEffect(() => {
     if (submissions) {
       const filtered = submissions.filter((submission) => {
-        const titleMatch = submission.title.toLowerCase().includes(filters.title.toLowerCase());
+        const searchMatch =
+          submission.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          submission.description.toLowerCase().includes(filters.search.toLowerCase());
         const statusMatch =
-          !filters.status || submission.status.toLowerCase() === filters.status.toLowerCase();
-        const descriptionMatch = submission.description
-          .toLowerCase()
-          .includes(filters.description.toLowerCase());
-        const dateMatch =
-          !filters.date ||
-          new Date(submission.createdAt).toLocaleDateString() === filters.date;
+          filters.status === "all" || submission.status.toLowerCase() === filters.status.toLowerCase();
+        
+        const dateMatch = (() => {
+            if (!filters.startDate && !filters.endDate) return true;
+            const submissionDate = new Date(submission.createdAt);
+            const startDate = filters.startDate ? new Date(filters.startDate) : null;
+            const endDate = filters.endDate ? new Date(filters.endDate) : null;
+  
+            if (startDate && endDate) {
+              return submissionDate >= startDate && submissionDate <= endDate;
+            } else if (startDate) {
+              return submissionDate >= startDate;
+            } else if (endDate) {
+              return submissionDate <= endDate;
+            }
+            return true;
+          })();
 
-        return titleMatch && statusMatch && descriptionMatch && dateMatch;
+        return searchMatch && statusMatch && dateMatch;
       });
       setFilteredSubmissions(filtered);
     }
@@ -126,39 +143,42 @@ const ContributionDashboard = () => {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-4">
           <Input
-            placeholder="Search by title"
-            value={filters.title}
-            onChange={(e) => handleFilterChange("title", e.target.value)}
+            placeholder="Search by title or description"
+            value={filters.search}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
             className="flex-1"
           />
-          <Select
-            onValueChange={(value) => handleFilterChange("status", value)}
-            defaultValue="all" // Set a non-empty default value for clarity
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem> {/* Update empty string to "all" */}
-              <SelectItem value="in progress">In Progress</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            type="date"
-            placeholder="Search by date"
-            value={filters.date}
-            onChange={(e) => handleFilterChange("date", e.target.value)}
-            className="flex-1"
-          />
-          <Input
-            placeholder="Search by description"
-            value={filters.description}
-            onChange={(e) => handleFilterChange("description", e.target.value)}
-            className="flex-1"
-          />
+          <div className="flex gap-4 flex-1">
+            <Input
+              type="date"
+              placeholder="Start date"
+              value={filters.startDate}
+              onChange={(e) => handleFilterChange("startDate", e.target.value)}
+              className="flex-1"
+            />
+            <Input
+              type="date"
+              placeholder="End date"
+              value={filters.endDate}
+              onChange={(e) => handleFilterChange("endDate", e.target.value)}
+              className="flex-1"
+            />
+            <Select
+              onValueChange={(value) => handleFilterChange("status", value)}
+              value={filters.status}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="in progress">In Progress</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Table */}
@@ -176,6 +196,7 @@ const ContributionDashboard = () => {
             {filteredSubmissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>{submission.title}</TableCell>
+                <TableCell>{submission.status}</TableCell>
                 <TableCell>
                   {!submission.figmaData || submission.status === "in progress" ? (
                     <div className="flex items-center">
@@ -252,16 +273,14 @@ const ContributionDashboard = () => {
                 <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>{submission.description}</TableCell>
                 <TableCell>
+                  {/* Actions */}
                   <div className="flex space-x-2">
-                    {/* View Submission Modal */}
                     <ViewSubmissionModal submission={submission} />
-                    {/* Edit Submission Modal */}
                     <CreateEditSubmissionModal
                       isEdit
                       submission={submission}
                       onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })}
                     />
-                    {/* Delete Submission Button */}
                     <Button
                       variant="outline"
                       onClick={() => handleDelete(submission.id)}
@@ -320,25 +339,25 @@ const ContributionDashboard = () => {
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">Are you sure you want to delete this submission?</div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
-                Cancel
+        {/* Confirmation Dialog */}
+        <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Delete</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">Are you sure you want to delete this submission?</div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={confirmDelete}>
+                Delete
               </Button>
-            </DialogClose>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 };
