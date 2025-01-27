@@ -16,6 +16,7 @@ import {
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import CreateEditSubmissionModal from "@/components/modals/CreateEditSubmission";
 import ViewSubmissionModal from "@/components/modals/ViewSubmission";
+import { Pagination, PaginationPrevious, PaginationContent, PaginationItem, PaginationLink, PaginationNext } from "@/components/ui/pagination"; // Import Pagination
 import { useLandingStyles } from "./ContributionDashboard.styles";
 import { useSubmissions, useDeleteSubmission } from "@/api/submissions";
 import {
@@ -31,6 +32,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { extractFileKey } from "@/lib/utils";
 
+const ITEMS_PER_PAGE = 10; // Define the number of rows per page
+
 const ContributionDashboard = () => {
   const styles = useLandingStyles();
   const { toast } = useToast();
@@ -41,8 +44,14 @@ const ContributionDashboard = () => {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<number | null>(null);
-  const [filters, setFilters] = useState({ title: "", status: "", date: "", description: "" });
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    startDate: "",
+    endDate: "",
+  });
   const [filteredSubmissions, setFilteredSubmissions] = useState(submissions || []);
+  const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
 
   const handleDelete = (submissionId: number | undefined) => {
     if (submissionId !== undefined) {
@@ -77,26 +86,46 @@ const ContributionDashboard = () => {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to the first page whenever filters change
   };
 
   useEffect(() => {
     if (submissions) {
       const filtered = submissions.filter((submission) => {
-        const titleMatch = submission.title.toLowerCase().includes(filters.title.toLowerCase());
+        const searchMatch =
+          submission.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          submission.description.toLowerCase().includes(filters.search.toLowerCase());
         const statusMatch =
-          !filters.status || submission.status.toLowerCase() === filters.status.toLowerCase();
-        const descriptionMatch = submission.description
-          .toLowerCase()
-          .includes(filters.description.toLowerCase());
-        const dateMatch =
-          !filters.date ||
-          new Date(submission.createdAt).toLocaleDateString() === filters.date;
+          filters.status === "all" || submission.status.toLowerCase() === filters.status.toLowerCase();
 
-        return titleMatch && statusMatch && descriptionMatch && dateMatch;
+        const dateMatch = (() => {
+          if (!filters.startDate && !filters.endDate) return true;
+          const submissionDate = new Date(submission.createdAt);
+          const startDate = filters.startDate ? new Date(filters.startDate) : null;
+          const endDate = filters.endDate ? new Date(filters.endDate) : null;
+
+          if (startDate && endDate) {
+            return submissionDate >= startDate && submissionDate <= endDate;
+          } else if (startDate) {
+            return submissionDate >= startDate;
+          } else if (endDate) {
+            return submissionDate <= endDate;
+          }
+          return true;
+        })();
+
+        return searchMatch && statusMatch && dateMatch;
       });
       setFilteredSubmissions(filtered);
     }
   }, [filters, submissions]);
+
+  // Calculate current page data
+  const totalPages = Math.ceil(filteredSubmissions.length / ITEMS_PER_PAGE);
+  const paginatedSubmissions = filteredSubmissions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading) {
     return <div className={styles.loading}>Loading submissions...</div>;
@@ -112,12 +141,9 @@ const ContributionDashboard = () => {
 
   return (
     <div className={styles.root}>
-      {/* Main Content */}
       <div className={styles.container}>
         <div className={styles.titleWrapper}>
           <div className={styles.title}>Contribution Model Dashboard</div>
-
-          {/* New Submission Button */}
           <div className={styles.newSubmission}>
             <CreateEditSubmissionModal onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })} />
           </div>
@@ -126,39 +152,48 @@ const ContributionDashboard = () => {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-4">
           <Input
-            placeholder="Search by title"
-            value={filters.title}
-            onChange={(e) => handleFilterChange("title", e.target.value)}
+            placeholder="Search by title or description"
+            value={filters.search}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
             className="flex-1"
           />
-          <Select
-            onValueChange={(value) => handleFilterChange("status", value)}
-            defaultValue="all" // Set a non-empty default value for clarity
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem> {/* Update empty string to "all" */}
-              <SelectItem value="in progress">In Progress</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            type="date"
-            placeholder="Search by date"
-            value={filters.date}
-            onChange={(e) => handleFilterChange("date", e.target.value)}
-            className="flex-1"
-          />
-          <Input
-            placeholder="Search by description"
-            value={filters.description}
-            onChange={(e) => handleFilterChange("description", e.target.value)}
-            className="flex-1"
-          />
+          <div className="flex gap-4 flex-1">
+            <Input
+              type="date"
+              placeholder="Start date"
+              value={filters.startDate}
+              onChange={(e) => handleFilterChange("startDate", e.target.value)}
+              className="flex-1"
+            />
+            <Input
+              type="date"
+              placeholder="End date"
+              value={filters.endDate}
+              onChange={(e) => handleFilterChange("endDate", e.target.value)}
+              className="flex-1"
+            />
+            <Select
+              onValueChange={(value) => handleFilterChange("status", value)}
+              value={filters.status}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="in progress">In Progress</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+
+        {/* Breadcrumb */}
+        <div className={styles.pageBreadcrumb}>
+            Page {currentPage} of {totalPages}
         </div>
 
         {/* Table */}
@@ -173,7 +208,7 @@ const ContributionDashboard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSubmissions.map((submission) => (
+            {paginatedSubmissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>{submission.title}</TableCell>
                 <TableCell>
@@ -253,15 +288,12 @@ const ContributionDashboard = () => {
                 <TableCell>{submission.description}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    {/* View Submission Modal */}
                     <ViewSubmissionModal submission={submission} />
-                    {/* Edit Submission Modal */}
                     <CreateEditSubmissionModal
                       isEdit
                       submission={submission}
                       onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })}
                     />
-                    {/* Delete Submission Button */}
                     <Button
                       variant="outline"
                       onClick={() => handleDelete(submission.id)}
@@ -312,11 +344,42 @@ const ContributionDashboard = () => {
           </TableBody>
         </Table>
 
-        {/* Pagination */}
+        {/* Pagination */}       
         <div className={styles.pagination}>
-          <Button variant="outline">{"<"}</Button>
-          <span>Page 1 of 3</span>
-          <Button variant="outline">{">"}</Button>
+          <Pagination>
+            {/* Previous Button */}
+            {currentPage > 1 && (
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              />
+            )}
+
+            {/* Page Numbers */}
+            <PaginationContent>
+              {Array.from({ length: totalPages }).map((_, index) => {
+                const pageNumber = index + 1;
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      isActive={currentPage === pageNumber} // Highlight current page
+                      onClick={() => setCurrentPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+            </PaginationContent>
+
+            {/* Next Button */}
+            {currentPage < totalPages && (
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+              />
+            )}
+          </Pagination>
         </div>
       </div>
 

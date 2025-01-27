@@ -94,6 +94,22 @@ export const useLandingStyles = createUseStyles({
     alignItems: "center",
     marginTop: "20px",
     gap: "10px",
+    "& nav a": {
+      cursor: "pointer",
+    },
+    "& nav ul .border-input": {
+      cursor: "pointer",
+      backgroundColor: "black",
+      color: "#fff",
+      fontWeight: "bold",
+    },
+  },
+  pageBreadcrumb: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    color: "#666",
+    textAlign: "right",
+    marginRight: "10px"
   },
   loading: {
     textAlign: "center",
