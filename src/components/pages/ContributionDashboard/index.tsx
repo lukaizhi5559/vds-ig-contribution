@@ -196,8 +196,8 @@ const ContributionDashboard = () => {
             Page {currentPage} of {totalPages}
         </div>
 
-        {/* Table */}
-        <Table>
+          {/* Table for Desktop/Tablet */}
+          <Table className={styles.table}>
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
@@ -287,7 +287,7 @@ const ContributionDashboard = () => {
                 <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>{submission.description}</TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
+                  <div className={styles.actions}>
                     <ViewSubmissionModal submission={submission} />
                     <CreateEditSubmissionModal
                       isEdit
@@ -343,6 +343,38 @@ const ContributionDashboard = () => {
             ))}
           </TableBody>
         </Table>
+
+        {/* Mobile Cards */}
+        {paginatedSubmissions.map((submission) => (
+          <div key={submission.id} className={styles.mobileCard}>
+            <div className={styles.mobileCardRow}>
+              <span>Title:</span> {submission.title}
+            </div>
+            <div className={styles.mobileCardRow}>
+              <span>Status:</span> {submission.status}
+            </div>
+            <div className={styles.mobileCardRow}>
+              <span>Date:</span> {new Date(submission.createdAt).toLocaleDateString()}
+            </div>
+            <div className={styles.mobileCardRow}>
+              <span>Description:</span> {submission.description}
+            </div>
+            <div className={styles.actions}>
+              <ViewSubmissionModal submission={submission} />
+              <CreateEditSubmissionModal
+                isEdit
+                submission={submission}
+                onSuccess={() => queryClient.invalidateQueries({ queryKey: ["submissions"] })}
+              />
+              <Button
+                variant="outline"
+                onClick={() => handleDelete(submission.id)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        ))}
 
         {/* Pagination */}       
         <div className={styles.pagination}>
