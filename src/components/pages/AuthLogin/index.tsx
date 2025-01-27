@@ -43,7 +43,7 @@ const AuthLogin = () => {
 
       if (user) {
         login(user);
-        navigate({ to: "/contribution" });
+        navigate({ to: "/" });
       } else {
         setError("User not found. Please register first.");
       }
@@ -60,7 +60,7 @@ const AuthLogin = () => {
     try {
       const user = await createUserMutation.mutateAsync({ name, email, password });
       login(user);
-      navigate({ to: "/contribution" });
+      navigate({ to: "/" });
     } catch (err) {
       console.error("Registration failed:", err);
       setError("Unable to register. Please try again later.");
@@ -140,6 +140,11 @@ const AuthLogin = () => {
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleInputChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                activeTab === "login" ? handleLogin() : handleRegister();
+              }
+            }}
           />
         </div>
 
