@@ -1,22 +1,43 @@
+/*!
+ * Copyright (C) Verizon. All rights reserved.
+ */
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Submission } from "@/types";
 import { apiClient } from "./apiClient";
 
+const AUTH_TOKEN = "txNbg8fkbWub"; // Bearer token for API authentication
+const HEADERS = {
+  Authorization: `Bearer ${AUTH_TOKEN}`,
+  "Content-Type": "application/json",
+};
+
 // Fetch all submissions
-export const fetchSubmissions = (): Promise<Submission[]> =>
-  apiClient<Submission[]>("/api/submissions");
+export const fetchSubmissions = async (): Promise<Submission[]> => {
+  const response = await apiClient<{ results: Submission[] }>("/ticket/search/?keyword=all", {
+    method: "GET",
+    headers: HEADERS,
+  });
+
+  return response.results; // Extract and return only the "results" array
+};
+
 
 // Fetch a single submission by ID
 export const fetchSubmissionById = (submissionId: number): Promise<Submission> =>
-  apiClient<Submission>(`/api/submissions/${submissionId}`);
+  apiClient<Submission>(`/ticket/${submissionId}`, {
+    method: "GET",
+    headers: HEADERS, // Pass headers
+  });
 
 // Create a new submission
 export const createSubmission = (
   submission: Omit<Submission, "id" | "createdAt">
 ): Promise<Submission> =>
-  apiClient<Submission>("/api/submissions", {
+  apiClient<Submission>("/ticket", {
     method: "POST",
-    body: submission,
+    headers: HEADERS, // Pass headers
+    body: JSON.stringify(submission), // Ensure body is stringified
   });
 
 // Update a submission
@@ -24,9 +45,10 @@ export const updateSubmission = (
   submissionId: number | undefined,
   submission: Omit<Submission, "createdAt">
 ): Promise<Submission> =>
-  apiClient<Submission>(`/api/submissions/${submissionId}`, {
+  apiClient<Submission>(`/ticket/${submissionId}`, {
     method: "PATCH",
-    body: submission,
+    headers: HEADERS, // Pass headers
+    body: JSON.stringify(submission), // Ensure body is stringified
   });
 
 // Update submission status
@@ -34,15 +56,17 @@ export const updateSubmissionStatus = (
   submissionId: number,
   status: Submission["status"]
 ): Promise<Submission> =>
-  apiClient<Submission>(`/api/submissions/${submissionId}`, {
+  apiClient<Submission>(`/ticket/${submissionId}`, {
     method: "PATCH",
-    body: { status },
+    headers: HEADERS, // Pass headers
+    body: JSON.stringify({ status }), // Ensure body is stringified
   });
 
 // Delete a submission by ID
 export const deleteSubmission = (submissionId: number): Promise<void> =>
-  apiClient<void>(`/api/submissions/${submissionId}`, {
+  apiClient<void>(`/ticket/${submissionId}`, {
     method: "DELETE",
+    headers: HEADERS, // Pass headers
   });
 
 // React Query Hooks
