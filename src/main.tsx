@@ -15,13 +15,14 @@ import { router } from "@/routes"; // Import the router created in Shell.tsx
 // console.log(process.env.VITE_VERCEL_ENV);
 // const environment = process.env.VITE_VERCEL_ENV || 'preview';
 
+// Uncomment the following line to use Mock Service Worker in development
 // Mock service worker in development
-if (process.env.NODE_ENV === "development") {
-    // Use dynamic import for ESM compatibility
-    import("./mocks/browser").then(({ worker }) => {
-      worker.start();
-    });
-}
+// if (process.env.NODE_ENV === "development") {
+//     // Use dynamic import for ESM compatibility
+//     import("./mocks/browser").then(({ worker }) => {
+//       worker.start();
+//     });
+// }
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
