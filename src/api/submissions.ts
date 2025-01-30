@@ -5,10 +5,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Submission } from "@/types";
 import { apiClient } from "./apiClient";
+import { useUserContext } from "@/context/UserContext"; // Ensure this exists for getting the logged-in user
+import { getSubmitterIdFromToken } from "@/lib/utils";
 
-const AUTH_TOKEN = "txNbg8fkbWub"; // Bearer token for API authentication
 const HEADERS = {
-  Authorization: `Bearer ${AUTH_TOKEN}`,
   "Content-Type": "application/json",
 };
 
@@ -22,23 +22,28 @@ export const fetchSubmissions = async (): Promise<Submission[]> => {
   return response.results; // Extract and return only the "results" array
 };
 
-
 // Fetch a single submission by ID
 export const fetchSubmissionById = (submissionId: number): Promise<Submission> =>
   apiClient<Submission>(`/ticket/${submissionId}`, {
     method: "GET",
-    headers: HEADERS, // Pass headers
+    headers: HEADERS,
   });
 
-// Create a new submission
-export const createSubmission = (
-  submission: Omit<Submission, "id" | "createdAt">
-): Promise<Submission> =>
-  apiClient<Submission>("/ticket", {
+// Create a new submission (Pass `submitter_id` as an argument)
+export const createSubmission = async (
+  submission: Omit<Submission, "id" | "submitter_id" | "createdAt">,
+  submitterId: number | undefined,
+): Promise<Submission> => {
+  if (!submitterId) {
+    throw new Error("User ID is required to create a submission");
+  }
+
+  return apiClient<Submission>("/ticket", {
     method: "POST",
-    headers: HEADERS, // Pass headers
-    body: JSON.stringify(submission), // Ensure body is stringified
+    headers: HEADERS,
+    body: { ...submission, submitter_id: submitterId }, // Ensure unique `submitter_id`
   });
+};
 
 // Update a submission
 export const updateSubmission = (
@@ -47,8 +52,8 @@ export const updateSubmission = (
 ): Promise<Submission> =>
   apiClient<Submission>(`/ticket/${submissionId}`, {
     method: "PATCH",
-    headers: HEADERS, // Pass headers
-    body: JSON.stringify(submission), // Ensure body is stringified
+    headers: HEADERS,
+    body: JSON.stringify(submission),
   });
 
 // Update submission status
@@ -58,15 +63,15 @@ export const updateSubmissionStatus = (
 ): Promise<Submission> =>
   apiClient<Submission>(`/ticket/${submissionId}`, {
     method: "PATCH",
-    headers: HEADERS, // Pass headers
-    body: JSON.stringify({ status }), // Ensure body is stringified
+    headers: HEADERS,
+    body: JSON.stringify({ status }),
   });
 
 // Delete a submission by ID
 export const deleteSubmission = (submissionId: number): Promise<void> =>
   apiClient<void>(`/ticket/${submissionId}`, {
     method: "DELETE",
-    headers: HEADERS, // Pass headers
+    headers: HEADERS,
   });
 
 // React Query Hooks
@@ -81,9 +86,21 @@ export const useSubmission = (submissionId: number | undefined) =>
 
 export const useCreateSubmission = () => {
   const queryClient = useQueryClient();
+  const { userDetails } = useUserContext(); // Get user details in a valid React hook scope
 
-  return useMutation<Submission, Error, Omit<Submission, "id" | "createdAt">>({
-    mutationFn: (submission: Omit<Submission, "id" | "createdAt">) => createSubmission(submission),
+
+  return useMutation<Submission, Error, Omit<Submission, "id" | "submitter_id" | "createdAt">>({
+    mutationFn: (submission) => {
+      if (!userDetails || !userDetails.access_token
+      ) {
+        throw new Error("User must be logged in to create a submission");
+      }
+      console.log('User Details:', submission, getSubmitterIdFromToken(userDetails?.access_token));
+      return createSubmission(
+        submission, 
+        getSubmitterIdFromToken(userDetails?.access_token)
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },

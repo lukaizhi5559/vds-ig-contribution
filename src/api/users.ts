@@ -4,13 +4,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./apiClient";
+import { LoginUser, User } from "@/types";
 
-export type User = {
-  id: number;
-  name: string;
-  email: string;
-  password?: string;
-};
 
 // Headers for FormData requests (Login)
 const FORM_HEADERS = {
@@ -26,8 +21,8 @@ export const fetchUserById = (userId: number): Promise<User> =>
   apiClient<User>("/users/${userId}");
 
 // Create a new user (Sign Up)
-export const createUser = (user: Omit<User, "id">): Promise<User> =>
-  apiClient<User>("/signup", {
+export const createUser = (user: Omit<User, "id">): Promise<LoginUser> =>
+  apiClient<LoginUser>("/signup", {
     method: "POST",
     body: {
       email: user.email,
@@ -36,12 +31,12 @@ export const createUser = (user: Omit<User, "id">): Promise<User> =>
   });
 
 // Login a user
-export const loginUser = async (user: Omit<User, "id" | "name">): Promise<User> => {
+export const loginUser = async (user: Omit<User, "id" | "name">): Promise<LoginUser> => {
   const formData = new URLSearchParams();
   formData.append("username", user.email);
   formData.append("password", user.password || "");
 
-  return apiClient<User>("/login", {
+  return apiClient<LoginUser>("/login", {
     method: "POST",
     headers: FORM_HEADERS,
     body: formData.toString(), // Encode as x-www-form-urlencoded
@@ -67,7 +62,7 @@ export const useUser = (userId: number) =>
 export const useLoginUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, Omit<User, "id" | "name">>({
+  return useMutation<LoginUser, Error, Omit<User, "id" | "name">>({
     mutationFn: loginUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -78,7 +73,7 @@ export const useLoginUser = () => {
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, Omit<User, "id">>({
+  return useMutation<LoginUser, Error, Omit<User, "id">>({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });

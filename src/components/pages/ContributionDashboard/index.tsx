@@ -31,6 +31,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { extractFileKey } from "@/lib/utils";
+import { generateMockSubmissions } from "@/mocks/handlers";
+import { Submission } from "@/types";
 
 const ITEMS_PER_PAGE = 10; // Define the number of rows per page
 
@@ -39,7 +41,7 @@ const ContributionDashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: submissions, isLoading, isError, error } = useSubmissions();
+  const { data: submissions, isLoading, isError, error } = useSubmissions()
   const { mutate: deleteSubmission } = useDeleteSubmission();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -91,7 +93,8 @@ const ContributionDashboard = () => {
 
   useEffect(() => {
     if (submissions) {
-      const filtered = submissions.filter((submission) => {
+      const mockSubmissions: Submission[] = generateMockSubmissions(10) as Submission[];
+      const filtered = [...mockSubmissions, ...submissions].filter((submission) => {
         const searchMatch =
           submission.title.toLowerCase().includes(filters.search.toLowerCase()) ||
           submission.description.toLowerCase().includes(filters.search.toLowerCase());

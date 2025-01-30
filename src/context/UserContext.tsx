@@ -1,14 +1,14 @@
 // src/context/UserContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { User } from "@/types";
+import React, { createContext, useContext, useState } from "react";
+import type { LoginUser } from "@/types";
 
 // Define the shape of the UserContext
 interface UserContextType {
-    userDetails: User | undefined
+    userDetails: LoginUser | undefined
     isAuthenticated: boolean;
-    setUserDetails: (user: User) => void;
+    setUserDetails: (user: LoginUser) => void;
     logout: () => void;
-    login: (user: User) => void;
+    login: (user: LoginUser) => void;
 }
 
 // Create the context with a default value
@@ -24,10 +24,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log("Cached User:", user);
   }
 
-  const [userDetails, setUserDetails] = useState<User | undefined>(user);
+  const [userDetails, setUserDetails] = useState<LoginUser | undefined>(user);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(user ? true : false);
 
-  const login = (user: User) => {
+  const login = (user: LoginUser) => {
     setIsAuthenticated(true);
     setUserDetails(user);
     localStorage.setItem("user", JSON.stringify(user));

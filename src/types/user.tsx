@@ -4,3 +4,9 @@ export type User = {
     email: string;
     password?: string;
 };
+
+export type LoginUser = {
+    access_token: string;
+    status: string;
+    token_type: string;
+}

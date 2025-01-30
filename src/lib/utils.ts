@@ -23,11 +23,27 @@ export function getInitials(name: string | undefined) {
 }
 
 export const extractFileKey = (fileKeyOrUrl: string): string => {
-    if (!fileKeyOrUrl) return "";
+    if (!fileKeyOrUrl) return ""
 
     // Match for the format "design/<fileKey>/"
-    const urlPattern = /design\/([a-zA-Z0-9]+)\//;
-    const match = fileKeyOrUrl.match(urlPattern);
+    const urlPattern = /design\/([a-zA-Z0-9]+)\//
+    const match = fileKeyOrUrl.match(urlPattern)
 
-    return match ? match[1] : fileKeyOrUrl;
-};
+    return match ? match[1] : fileKeyOrUrl
+}
+
+// Helper function to extract submitter_id from JWT token
+export const getSubmitterIdFromToken = (accessToken: string | undefined): number | undefined => {
+  try {
+    if (accessToken === undefined) return undefined
+
+    const payloadBase64 = accessToken.split(".")[1]; // Extract payload part
+    const payloadJson = atob(payloadBase64); // Decode Base64
+    const { sub } = JSON.parse(payloadJson); // Parse as JSON
+
+    return Number(sub); // Convert to number
+  } catch (error) {
+    console.error("Invalid JWT:", error);
+    return undefined;
+  }
+}

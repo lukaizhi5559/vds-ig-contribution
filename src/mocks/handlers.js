@@ -11,8 +11,8 @@ const users = [
 ];
 
 // Generate mock data
-const generateMockSubmissions = (numSubmissions) => {
-  const statuses = ["in progress", "success", "error", "rejected"];
+export const generateMockSubmissions = (numSubmissions) => {
+  const statuses = ["idle", "in progress", "success", "error", "rejected"];
 
   const mockComments = (submissionId) => [
     {
