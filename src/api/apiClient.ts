@@ -10,9 +10,10 @@ interface ImportMetaWithEnv extends ImportMeta {
 
 type RequestInit = {
     method?: string;
-    mode?: string,
+    mode?: RequestMode | undefined,
     body?: any;
     headers?: Record<string, string>;
+    redirect?: RequestRedirect | undefined;
 };
 
 const BASE_URL = "https://verizon.hiddenplanet.io/vds-cont/api/v1";
@@ -35,9 +36,11 @@ export async function apiClient<T>(
             ...headers, // Merge additional headers
         },
         body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+        redirect: "manual", // Prevents automatic redirects
     };
 
     try {
+        console.log('TICKET:', `${BASE_URL}${endpoint}`, headers);
         const response = await fetch(`${BASE_URL}${endpoint}`, requestOptions);
         const responseText = await response.text();
         
